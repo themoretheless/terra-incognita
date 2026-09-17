@@ -7,6 +7,13 @@ const revealSpots = new Map();
 let animationFrame = null;
 let zoomPercent = 100;
 
+const pointsOfInterest = [
+  { id: 'camp', lat: start[0], lng: start[1], discovered: true },
+  { id: 'tower', lat: start[0] + 0.00165, lng: start[1] + 0.00062, discovered: false },
+  { id: 'crossing', lat: start[0] - 0.00058, lng: start[1] + 0.00215, discovered: false }
+];
+const discoveryRadiusMeters = 60;
+
 const mapViewport = document.querySelector('#map-viewport');
 const playerEl = document.querySelector('#player');
 const fogCanvas = document.querySelector('#fog-canvas');
@@ -14,6 +21,8 @@ const progressBar = document.querySelector('#progress-bar');
 const progressValue = document.querySelector('#progress-value');
 const progressCaption = document.querySelector('#progress-caption');
 const coordinates = document.querySelector('#coordinates');
+const discoveryCountEl = document.querySelector('#discovery-count');
+const discoveryList = document.querySelector('#discovery-list');
 const map = L.map('map', { zoomControl: false, attributionControl: true }).setView(start, 14);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
@@ -52,20 +61,64 @@ function metersToLongitude(meters, lat) {
   return meters / (111320 * Math.max(.01, Math.cos(lat * Math.PI / 180)));
 }
 
+function distanceInMeters(lat1, lng1, lat2, lng2) {
+  const latMeters = (lat1 - lat2) * 111320;
+  const lngMeters = (lng1 - lng2) * 111320 * Math.max(.01, Math.cos(lat1 * Math.PI / 180));
+  return Math.sqrt(latMeters * latMeters + lngMeters * lngMeters);
+}
+
+function updateDiscoveries() {
+  let discoveredCount = 0;
+  pointsOfInterest.forEach((poi) => {
+    const entry = discoveryList.querySelector(`[data-poi="${poi.id}"]`);
+    if (!poi.discovered) {
+      const distance = distanceInMeters(player.lat, player.lng, poi.lat, poi.lng);
+      if (distance <= discoveryRadiusMeters) {
+        poi.discovered = true;
+      } else if (entry) {
+        const label = entry.querySelector('small');
+        if (label) label.textContent = `Расстояние: ${Math.round(distance)} м`;
+      }
+    }
+    if (poi.discovered) {
+      discoveredCount += 1;
+      if (entry && !entry.classList.contains('found')) {
+        entry.classList.add('found');
+        const icon = entry.querySelector('.discovery-icon');
+        const mark = entry.querySelector('i');
+        const label = entry.querySelector('small');
+        if (icon) icon.textContent = '✓';
+        if (mark) mark.textContent = '✓';
+        if (label) label.textContent = 'Обнаружено';
+      }
+    }
+  });
+  discoveryCountEl.textContent = `${discoveredCount} / ${pointsOfInterest.length}`;
+}
+
 function radiusInPixels(lat, lng, meters) {
   const center = map.latLngToContainerPoint([lat, lng]);
   const edge = map.latLngToContainerPoint([lat, lng + metersToLongitude(meters, lat)]);
   return Math.max(4, Math.abs(edge.x - center.x));
 }
 
+let lastFogWidth = -1;
+let lastFogHeight = -1;
+
 function drawFog() {
   const bounds = mapViewport.getBoundingClientRect();
   const ratio = window.devicePixelRatio || 1;
   const theme = document.documentElement.dataset.theme || 'terra';
-  fogCanvas.width = bounds.width * ratio;
-  fogCanvas.height = bounds.height * ratio;
-  maskCanvas.width = fogCanvas.width;
-  maskCanvas.height = fogCanvas.height;
+  const pixelWidth = Math.round(bounds.width * ratio);
+  const pixelHeight = Math.round(bounds.height * ratio);
+  if (pixelWidth !== lastFogWidth || pixelHeight !== lastFogHeight) {
+    fogCanvas.width = pixelWidth;
+    fogCanvas.height = pixelHeight;
+    maskCanvas.width = pixelWidth;
+    maskCanvas.height = pixelHeight;
+    lastFogWidth = pixelWidth;
+    lastFogHeight = pixelHeight;
+  }
   fogContext.setTransform(ratio, 0, 0, ratio, 0, 0);
   maskContext.setTransform(ratio, 0, 0, ratio, 0, 0);
   maskContext.clearRect(0, 0, bounds.width, bounds.height);
@@ -215,7 +268,10 @@ function render() {
   const point = map.latLngToContainerPoint([player.lat, player.lng]);
   playerEl.style.left = `${point.x}px`;
   playerEl.style.top = `${point.y}px`;
-  coordinates.textContent = `${Math.abs(player.lat).toFixed(3)}° N   ${Math.abs(player.lng).toFixed(3)}° E`;
+  const latHemisphere = player.lat >= 0 ? 'N' : 'S';
+  const lngHemisphere = player.lng >= 0 ? 'E' : 'W';
+  coordinates.textContent = `${Math.abs(player.lat).toFixed(3)}° ${latHemisphere}   ${Math.abs(player.lng).toFixed(3)}° ${lngHemisphere}`;
+  updateDiscoveries();
   const locationKey = key(player.lat, player.lng);
   if (!visited.has(locationKey)) {
     visited.add(locationKey);

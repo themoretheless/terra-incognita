@@ -60,76 +60,6 @@
             </div>
             <div class="map-hint"><span>✦</span> Перемещайтесь по карте или используйте <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></div>
           </div>
-          <div class="map-world" id="map-world" hidden>
-              <svg class="terrain" viewBox="0 0 1000 650" role="img" aria-label="Карта с лесами, озером и горами">
-                <defs>
-                  <linearGradient id="ground" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0" stop-color="#c4d7bb" />
-                    <stop offset="1" stop-color="#a6c3b0" />
-                  </linearGradient>
-                  <filter id="soft-shadow"><feGaussianBlur stdDeviation="8" /></filter>
-                  <pattern id="grid" width="70" height="70" patternUnits="userSpaceOnUse">
-                    <path d="M70 0H0V70" fill="none" stroke="#ffffff" stroke-opacity=".16" stroke-width="1" />
-                  </pattern>
-                </defs>
-                <rect width="1000" height="650" fill="url(#ground)" />
-                <path d="M-30 430C160 330 265 430 405 364S680 270 1030 350V700H-30Z" fill="#94b69d" opacity=".72" />
-                <path d="M-30 70C175 144 285 90 440 160S750 220 1030 115V-20H-30Z" fill="#d5dfc5" opacity=".88" />
-                <path d="M140 0C175 130 90 200 180 310S260 470 225 680H520C466 505 542 432 470 320S390 110 435 0Z" fill="#93b5a8" opacity=".55" />
-                <path d="M580 46c78 8 107 73 162 88 64 17 91-7 154 38 47 34 69 119 123 127v-260H580Z" fill="#b8cfb0" />
-                <ellipse cx="642" cy="382" rx="118" ry="83" fill="#73a9b3" />
-                <ellipse cx="625" cy="366" rx="95" ry="58" fill="#8fc6c3" opacity=".7" />
-                <path d="M530 300c78 28 149 31 222-8" fill="none" stroke="#e3e9d5" stroke-width="8" opacity=".72" />
-                <g fill="#667f6d" opacity=".78">
-                  <path d="M770 180l34-52 34 52zM803 188l36-62 40 62zM851 195l38-58 35 58z" />
-                  <path d="M85 500l30-65 38 65zM120 516l36-78 40 78zM175 527l32-68 38 68z" />
-                </g>
-                <g fill="#4f806d" opacity=".86">
-                  <circle cx="270" cy="130" r="27"/><circle cx="305" cy="145" r="32"/><circle cx="342" cy="124" r="25"/>
-                  <circle cx="300" cy="180" r="30"/><circle cx="255" cy="184" r="23"/>
-                  <circle cx="860" cy="478" r="29"/><circle cx="899" cy="495" r="26"/><circle cx="934" cy="467" r="31"/>
-                  <circle cx="900" cy="530" r="29"/><circle cx="850" cy="530" r="22"/>
-                </g>
-                <g fill="none" stroke="#dbe7d0" stroke-width="7" stroke-linecap="round" opacity=".9">
-                  <path d="M85 300C210 278 254 336 350 300s135-18 196 27" />
-                  <path d="M365 500c105-92 177-42 236-88s79-98 180-109" />
-                </g>
-                <rect width="1000" height="650" fill="url(#grid)" />
-                <g class="map-pin" transform="translate(713 244)">
-                  <circle r="14" fill="#f5a866" /><circle r="6" fill="#fff4db" />
-                </g>
-                <g class="map-pin" transform="translate(575 480)">
-                  <circle r="14" fill="#f5a866" /><circle r="6" fill="#fff4db" />
-                </g>
-                <g class="map-pin" transform="translate(835 310)">
-                  <circle r="14" fill="#f5a866" /><circle r="6" fill="#fff4db" />
-                </g>
-                <text x="700" y="220" class="map-text">СТАРАЯ БАШНЯ</text>
-                <text x="548" y="520" class="map-text">ЛАГЕРЬ</text>
-                <text x="812" y="286" class="map-text">ПЕРЕПРАВА</text>
-              </svg>
-              <svg class="fog" id="fog" viewBox="0 0 1000 650" aria-hidden="true">
-                <defs>
-                  <radialGradient id="reveal-gradient">
-                    <stop offset="0" stop-color="white" />
-                    <stop offset=".72" stop-color="white" />
-                    <stop offset="1" stop-color="black" />
-                  </radialGradient>
-                  <filter id="fog-blur"><feGaussianBlur stdDeviation="5" /></filter>
-                  <mask id="reveal-mask">
-                    <rect width="1000" height="650" fill="black" />
-                    <g id="reveals" fill="url(#reveal-gradient)" filter="url(#fog-blur)"></g>
-                  </mask>
-                </defs>
-                <rect width="1000" height="650" fill="#182331" mask="url(#reveal-mask)" opacity=".96" />
-                <rect width="1000" height="650" fill="#182331" opacity=".13" />
-              </svg>
-              <div class="player" id="player" role="img" aria-label="Ваш исследователь">
-                <span class="player-aura"></span><span class="player-icon">✦</span>
-              </div>
-            </div>
-            <div class="map-hint"><span>✦</span> Используйте <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> или стрелки</div>
-          </div>
         </div>
 
         <aside class="side-panel">
@@ -143,11 +73,11 @@
             <strong id="coordinates">48° 21′ N &nbsp; 16° 22′ E</strong>
           </div>
           <div class="discoveries">
-            <div class="panel-heading"><span>Найдено объектов</span><strong id="discovery-count">1 / 6</strong></div>
-            <div class="discovery-list">
-              <div class="discovery found"><span class="discovery-icon">⌂</span><span><b>Базовый лагерь</b><small>Отправная точка</small></span><i>✓</i></div>
-              <div class="discovery"><span class="discovery-icon">?</span><span><b>Старая башня</b><small>Расстояние: 184 м</small></span><i>·</i></div>
-              <div class="discovery"><span class="discovery-icon">?</span><span><b>Тихая переправа</b><small>Расстояние: 267 м</small></span><i>·</i></div>
+            <div class="panel-heading"><span>Найдено объектов</span><strong id="discovery-count">1 / 3</strong></div>
+            <div class="discovery-list" id="discovery-list">
+              <div class="discovery found" data-poi="camp"><span class="discovery-icon">⌂</span><span><b>Базовый лагерь</b><small>Отправная точка</small></span><i>✓</i></div>
+              <div class="discovery" data-poi="tower"><span class="discovery-icon">?</span><span><b>Старая башня</b><small>Расстояние: 184 м</small></span><i>·</i></div>
+              <div class="discovery" data-poi="crossing"><span class="discovery-icon">?</span><span><b>Тихая переправа</b><small>Расстояние: 267 м</small></span><i>·</i></div>
             </div>
           </div>
           <button id="locate" class="locate-button" type="button"><span>⌖</span> Вернуться к лагерю</button>
