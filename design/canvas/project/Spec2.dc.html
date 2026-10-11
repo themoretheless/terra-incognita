@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Ещё стили тумана · сравнение</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0;background:#0f1722}
+.h{color:#edf3ec;font:700 22px/1.2 Manrope,sans-serif;letter-spacing:-.02em}
+.sub{color:#9aa99f;font:11px/1.4 'JetBrains Mono',monospace}
+.th{color:#f5a866;font:500 10px 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase;padding:0 0 10px;border-bottom:1px solid rgba(226,239,226,.14)}
+.td{padding:10px 0;border-bottom:1px solid rgba(226,239,226,.1);color:#d7e1d7;font:12px/1.45 Manrope,sans-serif}
+.td code{color:#f5a866;font:11px 'JetBrains Mono',monospace}
+.rowname{color:#edf3ec;font:600 12px/1.45 Manrope,sans-serif}
+</style>
+</helmet>
+<div style="width: 2000px; height: 560px; box-sizing: border-box; padding: 32px 36px; background: #0f1722; display: flex; flex-direction: column; gap: 20px; font-family: Manrope, sans-serif">
+<div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 24px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<div class="h">Ещё четыре модели тумана</div>
+<div class="sub">Все четыре показаны на одной подложке OSM, чтобы сравнивать только пелену</div>
+</div>
+<div class="sub">R = радиус обзора · % = плотность затемнения</div>
+</div>
+
+<div style="display: grid; grid-template-columns: 200px repeat(4, minmax(0, 1fr)); gap: 0 28px">
+<div class="th">Параметр</div><div class="th">Warcraft · StarCraft · AoE II</div><div class="th">Red Alert</div><div class="th">Dota 2 · League of Legends</div><div class="th">Age of Wonders · Disciples · King's Bounty</div>
+
+<div class="td rowname">Состояния</div>
+<div class="td">Три: чёрное, серое (разведано), видимое.</div>
+<div class="td">Градации возврата пелены по времени: 0 → 30 → 60 → 85 % → чёрное.</div>
+<div class="td">Два: в обзоре и в тумане. Памяти нет.</div>
+<div class="td">AoW: три на гексах. Disciples и King's Bounty: два.</div>
+
+<div class="td rowname">Неразведанное</div>
+<div class="td">Чёрное. StarCraft: мягкий градиент <code>9 px</code>; Warcraft II: рваные клетки, смещение <code>14 px</code>.</div>
+<div class="td">Чёрное, клетки с мягкой кромкой: смещение <code>12 px</code>, размытие <code>3 px</code>.</div>
+<div class="td">Нет такого состояния: вся карта видна под туманом.</div>
+<div class="td">Чёрное по граням гекса <code>0.6 px</code> (AoW) или мягкое чёрное <code>10 px</code> (Disciples).</div>
+
+<div class="td rowname">Разведано, вне обзора</div>
+<div class="td">Серое <code>50 %</code>, насыщенность 20 %. Здания видны по памяти, юниты нет.</div>
+<div class="td">Темнеет с каждым ходом без обзора; через <code>N</code> секунд снова чёрное (опция Shroud Regrows).</div>
+<div class="td">Сине-серый туман <code>45 %</code>, насыщенность 45 %. Местность видна, объекты скрыты.</div>
+<div class="td">Приглушение <code>45 %</code> по гексам (AoW). У Disciples и KB не бывает.</div>
+
+<div class="td rowname">Источник обзора</div>
+<div class="td">Каждый юнит и здание, у каждого свой радиус.</div>
+<div class="td">Юниты и здания, радиус по типу.</div>
+<div class="td">Герои, варды, союзники, строения. Обзор общий на команду, круги мягкие <code>12 px</code>.</div>
+<div class="td">Герои и города, радиус в гексах.</div>
+
+<div class="td rowname">Память</div>
+<div class="td">Навсегда.</div>
+<div class="td">Пропадает со временем.</div>
+<div class="td">Нет.</div>
+<div class="td">Навсегда.</div>
+
+<div class="td rowname">Что взять для Terra Incognita</div>
+<div class="td">Серое состояние для мест, где были давно: карта есть, свежих данных нет.</div>
+<div class="td">Остывание областей, если нужна причина возвращаться в район.</div>
+<div class="td">Несколько источников обзора: спутники по экспедиции и оставленные метки, как варды.</div>
+<div class="td">Гексы вместо квадратных клеток, если сетка должна быть видна.</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2000,"height":560}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

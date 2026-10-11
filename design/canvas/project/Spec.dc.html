@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Параметры пелены · Red Dead и Heroes III</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0;background:#0f1722}
+.h{color:#edf3ec;font:700 22px/1.2 Manrope,sans-serif;letter-spacing:-.02em}
+.sub{color:#9aa99f;font:11px/1.4 'JetBrains Mono',monospace}
+.state{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid rgba(226,239,226,.14);background:#111b29}
+.state strong{display:block;color:#edf3ec;font:600 12px/1.2 Manrope,sans-serif}
+.state span{display:block;margin-top:2px;color:#9aa99f;font:10px/1.3 'JetBrains Mono',monospace}
+.sw{flex:0 0 44px;width:44px;height:30px;position:relative;overflow:hidden}
+.th{color:#f5a866;font:500 10px 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase;padding:0 0 10px;border-bottom:1px solid rgba(226,239,226,.14)}
+.td{padding:11px 0;border-bottom:1px solid rgba(226,239,226,.1);color:#d7e1d7;font:12px/1.45 Manrope,sans-serif}
+.td b{color:#edf3ec;font-weight:600}
+.td code{color:#f5a866;font:11px 'JetBrains Mono',monospace}
+.rowname{color:#edf3ec;font:600 12px/1.45 Manrope,sans-serif}
+</style>
+</helmet>
+<div style="width: 2000px; height: 700px; box-sizing: border-box; padding: 32px 36px; background: #0f1722; display: flex; flex-direction: column; gap: 22px; font-family: Manrope, sans-serif">
+<div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 24px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<div class="h">Пелена: параметры двух стилей</div>
+<div class="sub">Общая модель: область открывается навсегда · форма = объединение радиусов вдоль пути · край и анимация задают характер</div>
+</div>
+<div class="sub">R = радиус обзора · d = расстояние от центра клетки до путешественника</div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px">
+<div class="state"><div class="sw" style="background: #e7d6b1"></div><div><strong>Red Dead · Неизведано</strong><span>пергамент, зерно, намёки</span></div></div>
+<div class="state"><div class="sw" style="background: #e7d6b1"><div style="position: absolute; left: 0; top: 0; width: 24px; height: 30px; background: #cdb98e; border-right: 3px solid rgba(58,42,28,.55)"></div></div><div><strong>Red Dead · Проявляется</strong><span>кисть растёт, кайма темнеет</span></div></div>
+<div class="state"><div class="sw" style="background: #cdb98e"><div style="position: absolute; left: 6px; top: 8px; width: 32px; height: 0; border-top: 1.5px dashed #3a2a1c; transform: rotate(-14deg)"></div></div><div><strong>Red Dead · Открыто</strong><span>рисунок карты, подписи</span></div></div>
+<div class="state"><div class="sw" style="background: #000"></div><div><strong>Heroes III · Пелена</strong><span>сплошной чёрный</span></div></div>
+<div class="state"><div class="sw" style="background: #4f8a2c"><div style="position: absolute; left: 0; top: 0; width: 44px; height: 30px; background: rgba(16,20,31,.55)"></div><div style="position: absolute; left: 26px; top: -4px; width: 26px; height: 38px; background: #000; filter: blur(3px)"></div></div><div><strong>Heroes IV · Туман</strong><span>разведано, вне обзора · 55 %</span></div></div>
+<div class="state"><div class="sw" style="background: #4f8a2c"><div style="position: absolute; left: 0; top: 0; width: 44px; height: 30px; background: repeating-conic-gradient(#559438 0 25%, transparent 0 50%) 0 0 / 14px 14px"></div></div><div><strong>Heroes III · Открыто</strong><span>клетки целиком, объекты</span></div></div>
+</div>
+
+<div style="display: grid; grid-template-columns: 250px minmax(0, 1fr) minmax(0, 1fr); gap: 0 32px">
+<div class="th">Параметр</div><div class="th">Red Dead · пергамент</div><div class="th">Heroes III · пелена</div>
+
+<div class="td rowname">Неизведанная область</div>
+<div class="td">Пергамент <code>#E7D6B1</code>, зерно 12 %, виньетка по краям. Деталей нет, только редкие штрихи-намёки и пятна.</div>
+<div class="td">Сплошной чёрный <code>#000</code> с рваной полупрозрачной кромкой, как краевые тайлы пелены в Heroes III. Объекты под пеленой не рисуются.</div>
+
+<div class="td rowname">Форма открытой области</div>
+<div class="td">Объединение кругов R вдоль пройденного пути в <b>одну</b> фигуру; контур считается по объединённой маске, а не по каждому шагу.</div>
+<div class="td">То же объединение, растрированное по клеткам 32 px. Решётка привязана к координатам карты, при панорамировании не плывёт.</div>
+
+<div class="td rowname">Край</div>
+<div class="td">Рваная кисть: шум <code>0.022</code>, смещение <code>26 px</code>, размытие <code>1.6 px</code>. Чернильная кайма <code>3 px</code> multiply 55 % + ореол 9 px / 20 %.</div>
+<div class="td">Клетки не сглаживаются, мягкая только кромка пелены: шум <code>0.07</code>, смещение <code>16 px</code>, размытие <code>4 px</code>, ядро 100 % чёрного.</div>
+
+<div class="td rowname">Радиус обзора</div>
+<div class="td"><code>30 м</code> ≈ 85 px при масштабе 100 %. Радиус масштабируется с зумом, край остаётся той же толщины в px.</div>
+<div class="td"><code>R = 5.5</code> клетки от центра клетки героя (видимый круг 5 клеток). С зумом масштабируется вместе с клетками.</div>
+
+<div class="td rowname">Анимация проявления</div>
+<div class="td"><code>700 мс</code>, ease-out cubic. Радиус от 18 % до 100 %; кайма набирает плотность за 450 мс, ореол на 100 мс позже.</div>
+<div class="td">В Heroes III клетки открываются мгновенно с шагом героя (<code>~250 мс</code> на клетку). У нас кромка гаснет за <code>120 мс</code>, без easing.</div>
+
+<div class="td rowname">Подписи и объекты</div>
+<div class="td">Название места дописывается слева направо <code>400 → 900 мс</code> после того, как его точка вошла в область.</div>
+<div class="td">Объект появляется мгновенно вместе со своей клеткой. Названий на карте нет — только в подсказке при наведении.</div>
+
+<div class="td rowname">Память</div>
+<div class="td">Открытое остаётся открытым; повторный проход не перерисовывает край и не запускает анимацию.</div>
+<div class="td">Как в Heroes IV: разведанное вне обзора остаётся на карте, но приглушено туманом <code>55 %</code>; армий там не видно. Переключатель: чистый Heroes III без тумана.</div>
+
+<div class="td rowname">Слои сверху вниз</div>
+<div class="td">Зерно 12 % → кайма (stroke по контуру маски) → canvas-пелена с вырезом <code>destination-out</code> → перерисованная подложка OSM (пергамент).</div>
+<div class="td">Герой → пелена с рваной кромкой (клетки в координатах карты + смещение и размытие) → туман Heroes IV (затемнение) → объекты → перерисованная подложка OSM (трава, камень, вода).</div>
+
+<div class="td rowname">Подложка из данных OSM</div>
+<div class="td">Пергамент с зерном и пятнами; здания — контуры тушью; главные улицы двойной линией, второстепенные одинарной, пешеходные пунктиром; вода — штрихи у берега; парки — значки деревьев; мосты — поперечные штрихи.</div>
+<div class="td">Трава с текстурой; здания — каменные блоки с тенью; дороги — грунтовые ленты по классам; вода с песчаным берегом, тёмной кромкой и волнами; парки — спрайты деревьев; мосты — доски с перилами. В приложении: векторные тайлы и свой стиль (MapLibre) либо данные Overpass на canvas.</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2000,"height":700}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>
