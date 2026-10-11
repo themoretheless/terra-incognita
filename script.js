@@ -1,18 +1,29 @@
 const start = [48.8566, 2.3522];
-const player = { lat: start[0], lng: start[1] };
 const moveStepMeters = 30;
 const revealRadiusMeters = 30;
-const visited = new Set();
-const revealSpots = new Map();
+const discoveryRadiusMeters = 60;
+const sectorAreaSquareMeters = 1000 * 1000; // «сектор» для процента — квадратный километр вокруг лагеря
+const PLAYER_KEY = 'terra-player';
+const POI_KEY = 'terra-pois';
+
+const fog = new FogStore();
+const revealSpots = [];          // идущие сейчас анимации проявления
 let animationFrame = null;
 let zoomPercent = 100;
+let lastRevealKey = '';
 
 const pointsOfInterest = [
   { id: 'camp', lat: start[0], lng: start[1], discovered: true },
   { id: 'tower', lat: start[0] + 0.00165, lng: start[1] + 0.00062, discovered: false },
   { id: 'crossing', lat: start[0] - 0.00058, lng: start[1] + 0.00215, discovered: false }
 ];
-const discoveryRadiusMeters = 60;
+
+const savedPlayer = readJSON(PLAYER_KEY);
+const player = savedPlayer && Number.isFinite(savedPlayer.lat) && Number.isFinite(savedPlayer.lng)
+  ? { lat: savedPlayer.lat, lng: savedPlayer.lng }
+  : { lat: start[0], lng: start[1] };
+const savedPois = readJSON(POI_KEY) || {};
+pointsOfInterest.forEach((poi) => { if (savedPois[poi.id]) poi.discovered = true; });
 
 const mapViewport = document.querySelector('#map-viewport');
 const playerEl = document.querySelector('#player');
@@ -23,7 +34,8 @@ const progressCaption = document.querySelector('#progress-caption');
 const coordinates = document.querySelector('#coordinates');
 const discoveryCountEl = document.querySelector('#discovery-count');
 const discoveryList = document.querySelector('#discovery-list');
-const map = L.map('map', { zoomControl: false, attributionControl: true }).setView(start, 14);
+const savedAtEl = document.querySelector('#saved-at');
+const map = L.map('map', { zoomControl: false, attributionControl: true }).setView([player.lat, player.lng], 14);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
   attribution: '&copy; OpenStreetMap contributors'
@@ -49,8 +61,12 @@ document.querySelectorAll('.theme-button').forEach((button) => {
   });
 });
 
-function key(lat, lng) {
-  return `${Math.round(lat * 7400)},${Math.round(lng * 5000)}`;
+function readJSON(key) {
+  try { return JSON.parse(localStorage.getItem(key)); } catch (error) { return null; }
+}
+
+function writeJSON(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch (error) { /* хранилище недоступно */ }
 }
 
 function metersToLatitude(meters) {
@@ -69,12 +85,14 @@ function distanceInMeters(lat1, lng1, lat2, lng2) {
 
 function updateDiscoveries() {
   let discoveredCount = 0;
+  let changed = false;
   pointsOfInterest.forEach((poi) => {
     const entry = discoveryList.querySelector(`[data-poi="${poi.id}"]`);
     if (!poi.discovered) {
       const distance = distanceInMeters(player.lat, player.lng, poi.lat, poi.lng);
       if (distance <= discoveryRadiusMeters) {
         poi.discovered = true;
+        changed = true;
       } else if (entry) {
         const label = entry.querySelector('small');
         if (label) label.textContent = `Расстояние: ${Math.round(distance)} м`;
@@ -94,6 +112,22 @@ function updateDiscoveries() {
     }
   });
   discoveryCountEl.textContent = `${discoveredCount} / ${pointsOfInterest.length}`;
+  if (changed) {
+    const state = {};
+    pointsOfInterest.forEach((poi) => { if (poi.discovered) state[poi.id] = true; });
+    writeJSON(POI_KEY, state);
+  }
+}
+
+function updateProgress() {
+  const area = fog.revealedArea(start[0]);
+  const percentage = Math.min(100, area / sectorAreaSquareMeters * 100);
+  const shown = percentage < 10 ? percentage.toFixed(1) : Math.round(percentage);
+  progressBar.style.width = `${percentage}%`;
+  progressValue.textContent = `${shown}%`;
+  const hectares = area / 10000;
+  const areaText = hectares >= 100 ? `${(hectares / 100).toFixed(2)} км²` : `${hectares.toFixed(2)} га`;
+  progressCaption.textContent = percentage > 70 ? `Большая часть сектора изучена · ${areaText}` : percentage > 35 ? `Следы ведут всё дальше · ${areaText}` : `Путь только начинается · ${areaText}`;
 }
 
 function radiusInPixels(lat, lng, meters) {
@@ -126,14 +160,23 @@ function drawFog() {
   fogContext.fillStyle = fogColors[theme];
   fogContext.fillRect(0, 0, bounds.width, bounds.height);
   drawFogTexture(bounds, theme);
+
+  drawStoredReveal(theme);
+
   const now = performance.now();
   let animating = false;
-  revealSpots.forEach((spot) => {
+  for (let i = revealSpots.length - 1; i >= 0; i -= 1) {
+    const spot = revealSpots[i];
     const point = map.latLngToContainerPoint([spot.lat, spot.lng]);
     const radius = radiusInPixels(spot.lat, spot.lng, revealRadiusMeters);
     const progress = Math.min(1, (now - spot.createdAt) / spot.duration);
     const eased = 1 - Math.pow(1 - progress, 3);
-    if (progress < 1) animating = true;
+    if (progress < 1) {
+      animating = true;
+    } else {
+      spot.cells.forEach((cell) => cell.chunk.show(cell.index));
+      revealSpots.splice(i, 1);
+    }
     if (theme === 'heroes') {
       drawHeroesReveal(point, radius, eased);
     } else if (theme === 'western') {
@@ -141,12 +184,42 @@ function drawFog() {
     } else {
       drawTerraReveal(point, radius, eased);
     }
-  });
+  }
   fogContext.globalCompositeOperation = 'destination-out';
   fogContext.drawImage(maskCanvas, 0, 0, bounds.width, bounds.height);
   fogContext.globalCompositeOperation = 'source-over';
   animationFrame = null;
   if (animating) queueFogAnimation();
+}
+
+/**
+ * Накопленные открытые области: по одному drawImage на видимый чанк.
+ * В теме heroes клетки остаются чёткими и привязанными к карте, в остальных
+ * темах край смягчается размытием пропорционально текущему масштабу.
+ */
+function drawStoredReveal(theme) {
+  const mapBounds = map.getBounds();
+  const chunks = fog.chunksInBounds({
+    north: mapBounds.getNorth(), south: mapBounds.getSouth(), west: mapBounds.getWest(), east: mapBounds.getEast()
+  });
+  if (!chunks.length) return;
+  const radiusPx = radiusInPixels(player.lat, player.lng, revealRadiusMeters);
+  maskContext.save();
+  if (theme === 'heroes') {
+    maskContext.imageSmoothingEnabled = false;
+    maskContext.filter = 'none';
+  } else {
+    maskContext.imageSmoothingEnabled = true;
+    maskContext.imageSmoothingQuality = 'high';
+    maskContext.filter = `blur(${Math.max(1, radiusPx * (theme === 'western' ? .22 : .14)).toFixed(1)}px)`;
+  }
+  chunks.forEach((chunk) => {
+    const b = fog.chunkBounds(chunk);
+    const nw = map.latLngToContainerPoint([b.north, b.west]);
+    const se = map.latLngToContainerPoint([b.south, b.east]);
+    maskContext.drawImage(chunk.image(), nw.x, nw.y, se.x - nw.x, se.y - nw.y);
+  });
+  maskContext.restore();
 }
 
 function drawFogTexture(bounds, theme) {
@@ -264,7 +337,23 @@ function queueFogAnimation() {
   if (!animationFrame) animationFrame = requestAnimationFrame(drawFog);
 }
 
-function render() {
+function revealAround(animate) {
+  const cell = fog.cellOf(player.lat, player.lng);
+  const revealKey = `${cell.x},${cell.y}`;
+  if (revealKey === lastRevealKey) return;
+  lastRevealKey = revealKey;
+  const added = fog.reveal(player.lat, player.lng, revealRadiusMeters);
+  if (!added.length) return;
+  if (animate) {
+    const theme = document.documentElement.dataset.theme || 'terra';
+    revealSpots.push({ id: revealKey, lat: player.lat, lng: player.lng, cells: added, createdAt: performance.now(), duration: theme === 'heroes' ? 180 : 760 });
+  } else {
+    added.forEach((item) => item.chunk.show(item.index));
+  }
+  updateProgress();
+}
+
+function render(animateReveal = true) {
   const point = map.latLngToContainerPoint([player.lat, player.lng]);
   playerEl.style.left = `${point.x}px`;
   playerEl.style.top = `${point.y}px`;
@@ -272,16 +361,8 @@ function render() {
   const lngHemisphere = player.lng >= 0 ? 'E' : 'W';
   coordinates.textContent = `${Math.abs(player.lat).toFixed(3)}° ${latHemisphere}   ${Math.abs(player.lng).toFixed(3)}° ${lngHemisphere}`;
   updateDiscoveries();
-  const locationKey = key(player.lat, player.lng);
-  if (!visited.has(locationKey)) {
-    visited.add(locationKey);
-    const theme = document.documentElement.dataset.theme || 'terra';
-    revealSpots.set(locationKey, { id: locationKey, lat: player.lat, lng: player.lng, createdAt: performance.now(), duration: theme === 'heroes' ? 180 : 760 });
-    const percentage = Math.min(86, 12 + Math.round((visited.size - 1) * 2.7));
-    progressBar.style.width = `${percentage}%`;
-    progressValue.textContent = `${percentage}%`;
-    progressCaption.textContent = percentage > 70 ? 'Большая часть сектора изучена' : percentage > 35 ? 'Следы ведут всё дальше' : 'Путь только начинается';
-  }
+  revealAround(animateReveal);
+  writeJSON(PLAYER_KEY, { lat: player.lat, lng: player.lng });
   queueFogAnimation();
 }
 
@@ -292,7 +373,24 @@ function move(dx, dy) {
   render();
 }
 
+function markSaved() {
+  if (savedAtEl) savedAtEl.textContent = `Последнее сохранение: ${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+}
+
+function downloadText(filename, text) {
+  const blob = new Blob([text], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 document.addEventListener('keydown', (event) => {
+  if (event.target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName)) return;
   const controls = { ArrowUp: [0, -1], w: [0, -1], ArrowDown: [0, 1], s: [0, 1], ArrowLeft: [-1, 0], a: [-1, 0], ArrowRight: [1, 0], d: [1, 0] };
   const direction = controls[event.key] || controls[event.key.toLowerCase()];
   if (direction) { event.preventDefault(); move(...direction); }
@@ -312,7 +410,7 @@ document.querySelector('#zoom-out').addEventListener('click', () => {
   zoomPercent = Math.max(80, zoomPercent - 10);
   document.querySelector('#zoom-level').textContent = `${zoomPercent}%`;
 });
-map.on('move zoom resize', render);
+map.on('move zoom resize', () => render());
 map.on('click', (event) => {
   player.lat = event.latlng.lat;
   player.lng = event.latlng.lng;
@@ -320,7 +418,59 @@ map.on('click', (event) => {
   render();
 });
 window.addEventListener('resize', drawFog);
+
+const exportButton = document.querySelector('#export-fog');
+const importInput = document.querySelector('#import-fog');
+const resetButton = document.querySelector('#reset-fog');
+if (exportButton) {
+  exportButton.addEventListener('click', () => {
+    downloadText(`terra-incognita-${new Date().toISOString().slice(0, 10)}.json`, fog.exportJSON());
+  });
+}
+if (importInput) {
+  importInput.addEventListener('change', () => {
+    const file = importInput.files && importInput.files[0];
+    if (!file) return;
+    file.text().then((text) => {
+      const count = fog.importJSON(text);
+      if (savedAtEl) savedAtEl.textContent = `Импортировано чанков: ${count}`;
+      updateProgress();
+      drawFog();
+    }).catch((error) => {
+      if (savedAtEl) savedAtEl.textContent = `Импорт не удался: ${error.message}`;
+    }).finally(() => { importInput.value = ''; });
+  });
+}
+if (resetButton) {
+  resetButton.addEventListener('click', () => {
+    if (!window.confirm('Стереть всё открытое? Это действие нельзя отменить.')) return;
+    fog.clear().then(() => {
+      revealSpots.length = 0;
+      lastRevealKey = '';
+      localStorage.removeItem(POI_KEY);
+      pointsOfInterest.forEach((poi) => { poi.discovered = poi.id === 'camp'; });
+      discoveryList.querySelectorAll('.discovery').forEach((entry) => {
+        if (entry.dataset.poi === 'camp') return;
+        entry.classList.remove('found');
+        const icon = entry.querySelector('.discovery-icon');
+        const mark = entry.querySelector('i');
+        if (icon) icon.textContent = '?';
+        if (mark) mark.textContent = '·';
+      });
+      updateProgress();
+      render(false);
+      if (savedAtEl) savedAtEl.textContent = 'Открытые области стёрты';
+    });
+  });
+}
+
 function clock() { document.querySelector('#clock').textContent = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }); }
 clock();
 setInterval(clock, 60000);
-render();
+
+fog.onSaved = markSaved;
+fog.ready.then(() => {
+  updateProgress();
+  render(false);
+  if (savedAtEl) savedAtEl.textContent = fog.totalCells ? `Загружено: ${fog.chunks.size} чанк(ов)` : 'Последнее сохранение: ещё не было';
+});

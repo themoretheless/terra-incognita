@@ -83,9 +83,18 @@
           <button id="locate" class="locate-button" type="button"><span>⌖</span> Вернуться к лагерю</button>
         </aside>
       </section>
-      <footer><span>Сохраняйте любопытство.</span><span>Последнее сохранение: только что</span></footer>
+      <footer>
+        <span>Сохраняйте любопытство.</span>
+        <span class="footer-tools">
+          <button id="export-fog" class="tool-button" type="button">Экспорт</button>
+          <label class="tool-button" for="import-fog">Импорт<input id="import-fog" type="file" accept="application/json,.json" /></label>
+          <button id="reset-fog" class="tool-button danger" type="button">Стереть</button>
+        </span>
+        <span id="saved-at">Последнее сохранение: загрузка…</span>
+      </footer>
     </main>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script src="fog-store.js"></script>
     <script src="script.js"></script>
   </body>
 </html>
