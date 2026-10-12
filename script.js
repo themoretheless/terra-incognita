@@ -342,15 +342,21 @@ function revealAround(animate) {
   const revealKey = `${cell.x},${cell.y}`;
   if (revealKey === lastRevealKey) return;
   lastRevealKey = revealKey;
-  const added = fog.reveal(player.lat, player.lng, revealRadiusMeters);
-  if (!added.length) return;
-  if (animate) {
-    const theme = document.documentElement.dataset.theme || 'terra';
-    revealSpots.push({ id: revealKey, lat: player.lat, lng: player.lng, cells: added, createdAt: performance.now(), duration: theme === 'heroes' ? 180 : 760 });
-  } else {
-    added.forEach((item) => item.chunk.show(item.index));
-  }
-  updateProgress();
+  const lat = player.lat;
+  const lng = player.lng;
+  // сохранённые чанки вокруг должны быть в памяти, иначе reveal создаст пустые и затрёт их
+  fog.ensureAround(lat, lng, revealRadiusMeters).then(() => {
+    const added = fog.reveal(lat, lng, revealRadiusMeters);
+    if (!added.length) return;
+    if (animate) {
+      const theme = document.documentElement.dataset.theme || 'terra';
+      revealSpots.push({ id: revealKey, lat, lng, cells: added, createdAt: performance.now(), duration: theme === 'heroes' ? 180 : 760 });
+    } else {
+      added.forEach((item) => item.chunk.show(item.index));
+    }
+    updateProgress();
+    queueFogAnimation();
+  });
 }
 
 function render(animateReveal = true) {
@@ -378,7 +384,10 @@ function markSaved() {
 }
 
 function downloadText(filename, text) {
-  const blob = new Blob([text], { type: 'application/json' });
+  downloadBlob(filename, new Blob([text], { type: 'application/json' }));
+}
+
+function downloadBlob(filename, blob) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
@@ -439,14 +448,20 @@ function loadH3() {
 }
 if (exportButton) {
   exportButton.addEventListener('click', () => {
-    downloadText(`terra-incognita-${new Date().toISOString().slice(0, 10)}.json`, fog.exportJSON());
+    if (savedAtEl) savedAtEl.textContent = 'Готовлю экспорт…';
+    fog.exportBlob().then(({ blob, gzip }) => {
+      downloadBlob(`terra-incognita-${new Date().toISOString().slice(0, 10)}.json${gzip ? '.gz' : ''}`, blob);
+      if (savedAtEl) savedAtEl.textContent = `Экспорт готов · ${(blob.size / 1024).toFixed(1)} КБ`;
+    }).catch((error) => {
+      if (savedAtEl) savedAtEl.textContent = `Экспорт не удался: ${error.message}`;
+    });
   });
 }
 if (exportH3Button) {
   exportH3Button.addEventListener('click', () => {
     if (savedAtEl) savedAtEl.textContent = 'Готовлю экспорт H3…';
-    loadH3().then((h3) => {
-      downloadText(`terra-incognita-h3-r${H3_RESOLUTION}-${new Date().toISOString().slice(0, 10)}.json`, fog.exportH3(h3, H3_RESOLUTION));
+    loadH3().then((h3) => fog.exportH3(h3, H3_RESOLUTION)).then((text) => {
+      downloadText(`terra-incognita-h3-r${H3_RESOLUTION}-${new Date().toISOString().slice(0, 10)}.json`, text);
       if (savedAtEl) savedAtEl.textContent = 'Экспорт H3 готов';
     }).catch((error) => {
       if (savedAtEl) savedAtEl.textContent = `Экспорт H3 не удался: ${error.message}`;
@@ -457,8 +472,7 @@ if (importInput) {
   importInput.addEventListener('change', () => {
     const file = importInput.files && importInput.files[0];
     if (!file) return;
-    file.text().then((text) => {
-      const count = fog.importJSON(text);
+    fog.importBlob(file).then((count) => {
       if (savedAtEl) savedAtEl.textContent = `Импортировано чанков: ${count}`;
       updateProgress();
       drawFog();
@@ -495,6 +509,7 @@ clock();
 setInterval(clock, 60000);
 
 fog.onSaved = markSaved;
+fog.onChunksLoaded = () => queueFogAnimation();
 fog.ready.then(() => {
   updateProgress();
   render(false);

@@ -7,7 +7,9 @@
  * на 8 КБ, поэтому даже сотни квадратных километров пройденного пути весят
  * мегабайты, а проверка и запись клетки стоят одну битовую операцию.
  *
- * Чанки лежат в IndexedDB (запасной вариант — localStorage). Запись отложенная:
+ * Чанки лежат в IndexedDB (запасной вариант — localStorage). При старте читается
+ * только лёгкий индекс {key, count}; сами битовые карты подгружаются для видимой
+ * области и окрестности путешественника. Запись отложенная:
  * изменённые чанки сбрасываются через SAVE_DELAY мс после последнего изменения
  * и принудительно при уходе со страницы.
  *
@@ -24,8 +26,9 @@
   const EARTH_CIRCUMFERENCE = 40075016.686;
   const SAVE_DELAY = 800;
   const DB_NAME = 'terra-incognita';
-  const DB_VERSION = 1;
+  const DB_VERSION = 2;
   const STORE = 'chunks';
+  const INDEX_STORE = 'chunk-index';   // {key, count} — лёгкий список всех чанков
   const LS_KEY = 'terra-fog-chunks';
 
   const POPCOUNT = new Uint8Array(256);
@@ -138,8 +141,11 @@
 
   class FogStore {
     constructor() {
-      this.chunks = new Map();
+      this.chunks = new Map();     // загруженные чанки
+      this.index = new Map();      // key -> число открытых клеток, для всех чанков в хранилище
+      this.loading = new Map();    // key -> Promise загрузки
       this.totalCells = 0;
+      this.onChunksLoaded = null;
       this.saveTimer = null;
       this.db = null;
       this.ready = this.open();
@@ -202,6 +208,7 @@
           const ly = cy & (CHUNK_SIZE - 1);
           if (chunk.set(lx, ly)) {
             this.totalCells += 1;
+            this.index.set(chunk.key, chunk.count);
             added.push({ chunk, index: Chunk.index(lx, ly) });
           }
         }
@@ -218,15 +225,92 @@
 
     /** Чанки, пересекающие прямоугольник широт/долгот. */
     chunksInBounds(bounds) {
+      const keys = this.keysInBounds(bounds);
+      const out = [];
+      const missing = [];
+      keys.forEach((key) => {
+        const chunk = this.chunks.get(key);
+        if (chunk) { if (chunk.count) out.push(chunk); } else missing.push(key);
+      });
+      if (missing.length) {
+        this.load(missing).then((loaded) => { if (loaded && this.onChunksLoaded) this.onChunksLoaded(); });
+      }
+      return out;
+    }
+
+    /** Ключи сохранённых чанков, пересекающих прямоугольник. */
+    keysInBounds(bounds) {
       const nw = project(bounds.north, bounds.west, CHUNK_ZOOM);
       const se = project(bounds.south, bounds.east, CHUNK_ZOOM);
+      const x0 = Math.floor(nw.x); const x1 = Math.floor(se.x);
+      const y0 = Math.floor(nw.y); const y1 = Math.floor(se.y);
       const out = [];
-      this.chunks.forEach((chunk) => {
-        if (chunk.cx + 1 < nw.x || chunk.cx > se.x || chunk.cy + 1 < nw.y || chunk.cy > se.y) return;
-        if (chunk.count === 0) return;
-        out.push(chunk);
-      });
+      if ((x1 - x0 + 1) * (y1 - y0 + 1) <= this.index.size) {
+        for (let y = y0; y <= y1; y += 1) {
+          for (let x = x0; x <= x1; x += 1) {
+            const key = `${CHUNK_ZOOM}/${x}/${y}`;
+            if (this.index.get(key)) out.push(key);
+          }
+        }
+      } else {
+        this.index.forEach((count, key) => {
+          if (!count) return;
+          const [, x, y] = key.split('/').map(Number);
+          if (x >= x0 && x <= x1 && y >= y0 && y <= y1) out.push(key);
+        });
+      }
       return out;
+    }
+
+    /** Подгружает чанки вокруг точки, чтобы reveal() не затёр несчитанные данные. */
+    ensureAround(lat, lng, radiusMeters) {
+      const dLat = radiusMeters / 111320;
+      const dLng = radiusMeters / (111320 * Math.max(.01, Math.cos(lat * Math.PI / 180)));
+      const keys = this.keysInBounds({ north: lat + dLat, south: lat - dLat, west: lng - dLng, east: lng + dLng });
+      return this.load(keys.filter((key) => !this.chunks.has(key)));
+    }
+
+    /** Загружает из IndexedDB указанные чанки. Возвращает число реально загруженных. */
+    load(keys) {
+      const need = keys.filter((key) => !this.chunks.has(key) && this.index.has(key));
+      if (!need.length || !this.db) return Promise.resolve(0);
+      const pending = need.filter((key) => !this.loading.has(key));
+      if (pending.length) {
+        const batch = new Promise((resolve) => {
+          const tx = this.db.transaction(STORE, 'readonly');
+          const store = tx.objectStore(STORE);
+          let loaded = 0;
+          pending.forEach((key) => {
+            const request = store.get(key);
+            request.onsuccess = () => {
+              const row = request.result;
+              if (row && !this.chunks.has(key)) { this.place(key, row.bits); loaded += 1; }
+            };
+          });
+          tx.oncomplete = () => { pending.forEach((key) => this.loading.delete(key)); resolve(loaded); };
+          tx.onerror = () => { pending.forEach((key) => this.loading.delete(key)); resolve(loaded); };
+        });
+        pending.forEach((key) => this.loading.set(key, batch));
+      }
+      return Promise.all(need.map((key) => this.loading.get(key) || Promise.resolve(0)))
+        .then((counts) => counts.reduce((a, b) => a + b, 0) ? need.length : 0);
+    }
+
+    /** Загружает всё — для экспорта. */
+    loadAll() {
+      return this.load(Array.from(this.index.keys()));
+    }
+
+    /** Кладёт прочитанный из хранилища чанк, не меняя totalCells (он уже учтён индексом). */
+    place(key, bytes) {
+      const [, cx, cy] = key.split('/').map(Number);
+      const chunk = new Chunk(key, cx, cy, bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes));
+      this.chunks.set(key, chunk);
+      if (this.index.get(key) !== chunk.count) {
+        this.totalCells += chunk.count - (this.index.get(key) || 0);
+        this.index.set(key, chunk.count);
+      }
+      return chunk;
     }
 
     // ---------- хранение ----------
@@ -235,17 +319,36 @@
       if (typeof indexedDB === 'undefined') return this.loadFromLocalStorage();
       return new Promise((resolve) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
-        request.onupgradeneeded = () => {
+        request.onupgradeneeded = (event) => {
           const db = request.result;
           if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE, { keyPath: 'key' });
+          if (!db.objectStoreNames.contains(INDEX_STORE)) {
+            const indexStore = db.createObjectStore(INDEX_STORE, { keyPath: 'key' });
+            if (event.oldVersion >= 1) {
+              // миграция с версии 1: строим индекс по уже сохранённым чанкам
+              const cursor = request.transaction.objectStore(STORE).openCursor();
+              cursor.onsuccess = () => {
+                const c = cursor.result;
+                if (!c) return;
+                const bits = c.value.bits;
+                let count = 0;
+                for (let i = 0; i < bits.length; i += 1) count += POPCOUNT[bits[i]];
+                indexStore.put({ key: c.value.key, count });
+                c.continue();
+              };
+            }
+          }
         };
         request.onerror = () => resolve(this.loadFromLocalStorage());
         request.onsuccess = () => {
           this.db = request.result;
-          const tx = this.db.transaction(STORE, 'readonly');
-          const all = tx.objectStore(STORE).getAll();
+          const tx = this.db.transaction(INDEX_STORE, 'readonly');
+          const all = tx.objectStore(INDEX_STORE).getAll();
           all.onsuccess = () => {
-            (all.result || []).forEach((row) => this.adopt(row.key, row.bits));
+            (all.result || []).forEach((row) => {
+              this.index.set(row.key, row.count);
+              this.totalCells += row.count;
+            });
             resolve(this);
           };
           all.onerror = () => resolve(this);
@@ -263,13 +366,15 @@
         existing.count = 0;
         for (let i = 0; i < existing.bits.length; i += 1) existing.count += POPCOUNT[existing.bits[i]];
         this.totalCells += existing.count;
+        this.index.set(key, existing.count);
         existing.showAll();
         existing.dirty = true;
         return existing;
       }
       const chunk = new Chunk(key, cx, cy, bits);
       this.chunks.set(key, chunk);
-      this.totalCells += chunk.count;
+      this.totalCells += chunk.count - (this.index.get(key) || 0);
+      this.index.set(key, chunk.count);
       return chunk;
     }
 
@@ -297,9 +402,13 @@
       dirty.forEach((chunk) => { chunk.dirty = false; });
       if (this.db) {
         return new Promise((resolve) => {
-          const tx = this.db.transaction(STORE, 'readwrite');
+          const tx = this.db.transaction([STORE, INDEX_STORE], 'readwrite');
           const store = tx.objectStore(STORE);
-          dirty.forEach((chunk) => store.put({ key: chunk.key, bits: chunk.bits }));
+          const indexStore = tx.objectStore(INDEX_STORE);
+          dirty.forEach((chunk) => {
+            store.put({ key: chunk.key, bits: chunk.bits });
+            indexStore.put({ key: chunk.key, count: chunk.count });
+          });
           tx.oncomplete = () => { if (this.onSaved) this.onSaved(); resolve(true); };
           tx.onerror = () => { dirty.forEach((chunk) => { chunk.dirty = true; }); resolve(false); };
         });
@@ -318,11 +427,13 @@
 
     clear() {
       this.chunks.clear();
+      this.index.clear();
       this.totalCells = 0;
       if (this.db) {
         return new Promise((resolve) => {
-          const tx = this.db.transaction(STORE, 'readwrite');
+          const tx = this.db.transaction([STORE, INDEX_STORE], 'readwrite');
           tx.objectStore(STORE).clear();
+          tx.objectStore(INDEX_STORE).clear();
           tx.oncomplete = () => resolve(true);
           tx.onerror = () => resolve(false);
         });
@@ -333,25 +444,54 @@
 
     // ---------- обмен ----------
 
+    /** JSON со всеми чанками (сначала догружает всё из хранилища). */
     exportJSON() {
-      const chunks = {};
-      this.chunks.forEach((chunk) => { if (chunk.count) chunks[chunk.key] = bytesToBase64(chunk.bits); });
-      return JSON.stringify({ format: 'terra-incognita-fog', version: 1, cellZoom: CELL_ZOOM, chunkBits: CHUNK_BITS, exportedAt: new Date().toISOString(), chunks });
+      return this.loadAll().then(() => {
+        const chunks = {};
+        this.chunks.forEach((chunk) => { if (chunk.count) chunks[chunk.key] = bytesToBase64(chunk.bits); });
+        return JSON.stringify({ format: 'terra-incognita-fog', version: 1, cellZoom: CELL_ZOOM, chunkBits: CHUNK_BITS, exportedAt: new Date().toISOString(), chunks });
+      });
+    }
+
+    /**
+     * Экспорт, сжатый gzip, если браузер умеет CompressionStream.
+     * Возвращает {blob, gzip}.
+     */
+    exportBlob() {
+      return this.exportJSON().then((text) => {
+        const plain = new Blob([text], { type: 'application/json' });
+        if (typeof CompressionStream === 'undefined') return { blob: plain, gzip: false };
+        const stream = plain.stream().pipeThrough(new CompressionStream('gzip'));
+        return new Response(stream).blob().then((blob) => ({ blob: new Blob([blob], { type: 'application/gzip' }), gzip: true }));
+      });
+    }
+
+    /** Принимает File/Blob: обычный JSON или gzip. */
+    importBlob(blob) {
+      return blob.slice(0, 2).arrayBuffer().then((head) => {
+        const bytes = new Uint8Array(head);
+        const isGzip = bytes[0] === 0x1f && bytes[1] === 0x8b;
+        if (!isGzip) return blob.text();
+        if (typeof DecompressionStream === 'undefined') throw new Error('браузер не умеет распаковывать gzip');
+        return new Response(blob.stream().pipeThrough(new DecompressionStream('gzip'))).text();
+      }).then((text) => this.importJSON(text));
     }
 
     importJSON(text) {
       const parsed = JSON.parse(text);
       if (parsed.format !== 'terra-incognita-fog' || parsed.cellZoom !== CELL_ZOOM || parsed.chunkBits !== CHUNK_BITS) {
-        throw new Error('Файл другого формата или другой сетки');
+        return Promise.reject(new Error('Файл другого формата или другой сетки'));
       }
-      let imported = 0;
-      Object.keys(parsed.chunks || {}).forEach((key) => {
-        const chunk = this.adopt(key, base64ToBytes(parsed.chunks[key]));
-        chunk.dirty = true;
-        imported += 1;
+      const keys = Object.keys(parsed.chunks || {});
+      // сначала догружаем пересекающиеся чанки, чтобы объединить, а не перезаписать
+      return this.load(keys).then(() => {
+        keys.forEach((key) => {
+          const chunk = this.adopt(key, base64ToBytes(parsed.chunks[key]));
+          chunk.dirty = true;
+        });
+        this.scheduleSave();
+        return keys.length;
       });
-      this.scheduleSave();
-      return imported;
     }
   }
 
@@ -380,11 +520,13 @@
    * Клетка попадает в гекс по своему центру; результат сжат compactCells.
    */
   FogStore.prototype.exportH3 = function (h3, resolution) {
-    const set = new Set();
-    this.forEachCell((lat, lng) => set.add(h3.latLngToCell(lat, lng, resolution)));
-    const cells = Array.from(set);
-    const compact = h3.compactCells(cells);
-    return JSON.stringify({ format: 'terra-incognita-h3', version: 1, resolution, exportedAt: new Date().toISOString(), cellCount: cells.length, cells: compact });
+    return this.loadAll().then(() => {
+      const set = new Set();
+      this.forEachCell((lat, lng) => set.add(h3.latLngToCell(lat, lng, resolution)));
+      const cells = Array.from(set);
+      const compact = h3.compactCells(cells);
+      return JSON.stringify({ format: 'terra-incognita-h3', version: 1, resolution, exportedAt: new Date().toISOString(), cellCount: cells.length, cells: compact });
+    });
   };
 
   FogStore.CELL_ZOOM = CELL_ZOOM;
