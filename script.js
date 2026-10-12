@@ -422,9 +422,35 @@ window.addEventListener('resize', drawFog);
 const exportButton = document.querySelector('#export-fog');
 const importInput = document.querySelector('#import-fog');
 const resetButton = document.querySelector('#reset-fog');
+const exportH3Button = document.querySelector('#export-h3');
+const H3_URL = 'https://unpkg.com/h3-js@4.1.0/dist/h3-js.umd.js';
+const H3_RESOLUTION = 12; // ≈ 307 м², ребро ≈ 10 м
+
+function loadH3() {
+  if (window.h3) return Promise.resolve(window.h3);
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = H3_URL;
+    script.crossOrigin = 'anonymous';
+    script.onload = () => (window.h3 ? resolve(window.h3) : reject(new Error('h3-js не загрузился')));
+    script.onerror = () => reject(new Error('нет доступа к h3-js'));
+    document.head.appendChild(script);
+  });
+}
 if (exportButton) {
   exportButton.addEventListener('click', () => {
     downloadText(`terra-incognita-${new Date().toISOString().slice(0, 10)}.json`, fog.exportJSON());
+  });
+}
+if (exportH3Button) {
+  exportH3Button.addEventListener('click', () => {
+    if (savedAtEl) savedAtEl.textContent = 'Готовлю экспорт H3…';
+    loadH3().then((h3) => {
+      downloadText(`terra-incognita-h3-r${H3_RESOLUTION}-${new Date().toISOString().slice(0, 10)}.json`, fog.exportH3(h3, H3_RESOLUTION));
+      if (savedAtEl) savedAtEl.textContent = 'Экспорт H3 готов';
+    }).catch((error) => {
+      if (savedAtEl) savedAtEl.textContent = `Экспорт H3 не удался: ${error.message}`;
+    });
   });
 }
 if (importInput) {

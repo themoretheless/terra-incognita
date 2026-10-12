@@ -355,6 +355,38 @@
     }
   }
 
+  /**
+   * Перебор всех открытых клеток: callback(lat, lng) с центром клетки.
+   */
+  FogStore.prototype.forEachCell = function (callback) {
+    this.chunks.forEach((chunk) => {
+      const baseX = chunk.cx << CHUNK_BITS;
+      const baseY = chunk.cy << CHUNK_BITS;
+      for (let i = 0; i < chunk.bits.length; i += 1) {
+        const byte = chunk.bits[i];
+        if (!byte) continue;
+        for (let b = 0; b < 8; b += 1) {
+          if (!(byte & (1 << b))) continue;
+          const index = (i << 3) | b;
+          const p = unproject(baseX + (index & (CHUNK_SIZE - 1)) + 0.5, baseY + (index >> CHUNK_BITS) + 0.5, CELL_ZOOM);
+          callback(p.lat, p.lng);
+        }
+      }
+    });
+  };
+
+  /**
+   * Экспорт в ячейки H3 (Uber). h3 — объект библиотеки h3-js v4.
+   * Клетка попадает в гекс по своему центру; результат сжат compactCells.
+   */
+  FogStore.prototype.exportH3 = function (h3, resolution) {
+    const set = new Set();
+    this.forEachCell((lat, lng) => set.add(h3.latLngToCell(lat, lng, resolution)));
+    const cells = Array.from(set);
+    const compact = h3.compactCells(cells);
+    return JSON.stringify({ format: 'terra-incognita-h3', version: 1, resolution, exportedAt: new Date().toISOString(), cellCount: cells.length, cells: compact });
+  };
+
   FogStore.CELL_ZOOM = CELL_ZOOM;
   FogStore.CHUNK_ZOOM = CHUNK_ZOOM;
   FogStore.CHUNK_SIZE = CHUNK_SIZE;
