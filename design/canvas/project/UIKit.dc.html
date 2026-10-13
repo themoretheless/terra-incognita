@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>UI-кит · элементы двух стилей</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oranienbaum&family=Philosopher:wght@400;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0;background:#0f1722}
+.kit-h{font:600 15px/1.2 'Cormorant Garamond',serif;letter-spacing:.02em}
+.blk{display:flex;flex-direction:column;gap:12px;padding:16px;border:1px solid rgba(255,255,255,.08)}
+.blk-t{font:500 10px 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#8a8f88}
+.sw{display:flex;flex-direction:column;gap:5px;font:10px 'JetBrains Mono',monospace;color:#9aa99f}
+.sw i{display:block;height:34px;border:1px solid rgba(255,255,255,.12)}
+.rd{color:#efe2c4;font-family:'Cormorant Garamond',serif}
+.rd .cap{font-family:Oranienbaum,serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase}
+.rd .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:44px;padding:0 18px;background:transparent;border:1px solid rgba(217,179,106,.55);color:#efe2c4;font-family:Oranienbaum,serif;font-size:12px;letter-spacing:.16em;text-transform:uppercase;cursor:pointer}
+.rd .btn:hover{border-color:#d9b36a;color:#d9b36a}
+.rd .btn-primary{background:#b83a24;border-color:#b83a24;color:#f7e9cc}
+.rd .btn-primary:hover{background:#c8432b;border-color:#c8432b}
+.rd .tab{min-height:44px;padding:0 14px;background:transparent;border:0;border-bottom:2px solid transparent;color:#b39b78;font-family:Oranienbaum,serif;font-size:12px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer}
+.rd .tab.active{color:#efe2c4;border-bottom-color:#c8432b}
+.rd .icon-btn{width:44px;height:44px;display:grid;place-items:center;background:transparent;border:1px solid rgba(217,179,106,.45);color:#efe2c4;font-family:Oranienbaum,serif;font-size:22px;line-height:1;cursor:pointer}
+.rd .panel{background:linear-gradient(180deg,#1f1611,#17100c);border:1px solid #3d2b1d;outline:1px dashed rgba(217,179,106,.3);outline-offset:-6px}
+.rd .row{display:flex;align-items:center;gap:12px;min-height:44px}
+.rd .row .ico{display:grid;place-items:center;width:36px;height:36px;border:1px solid #4a3627;border-radius:50%;color:#d9b36a;flex:0 0 36px;font-family:Oranienbaum,serif;font-size:16px}
+.rd .row.unknown .ico{color:#7d6a52;border-style:dashed}
+.rd .row b{display:block;font-family:Oranienbaum,serif;font-weight:400;font-size:16px}
+.rd .row small{display:block;font-size:13px;font-style:italic;color:#b39b78}
+.rd .row.unknown b{color:#9c876a}
+.rd .row .st{margin-left:auto;color:#d9b36a;font-family:Oranienbaum,serif;font-size:15px}
+.rd .row.unknown .st{color:#6b5a46}
+.rd kbd{display:inline-block;min-width:18px;padding:1px 5px;margin-left:4px;border:1px solid #6b5a46;border-radius:2px;font-family:Oranienbaum,serif;font-size:11px;color:#efe2c4;text-align:center}
+.h3{color:#fff3c9;font-family:'Cormorant Garamond',serif}
+.h3 .cap{font-family:Philosopher,sans-serif;font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+.h3 .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:44px;padding:0 18px;border-radius:4px;background:linear-gradient(180deg,#5e3d21 0%,#3d2515 52%,#2a160c 100%);border:1px solid #e5b84f;box-shadow:inset 0 1px 0 rgba(255,230,126,.5),inset 0 -2px 0 rgba(0,0,0,.65),inset 0 0 0 1px rgba(0,0,0,.6),0 3px 6px rgba(0,0,0,.6);color:#ffe9a8;text-shadow:0 1px 0 #000;font-family:Philosopher,sans-serif;font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
+.h3 .btn:hover{background:linear-gradient(180deg,#75502b 0%,#4d3019 52%,#34200f 100%)}
+.h3 .btn-ghost{background:transparent;box-shadow:none;border-color:rgba(229,184,79,.5);color:#c5b58b}
+.h3 .tab{min-height:44px;padding:0 14px;background:transparent;border:1px solid transparent;color:#c5b58b;font-family:Philosopher,sans-serif;font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
+.h3 .tab.active{color:#ffe9a8;border-color:#e5b84f;background:rgba(91,63,142,.35);box-shadow:inset 0 0 0 1px #3a2a1c}
+.h3 .icon-btn{width:44px;height:44px;display:grid;place-items:center;background:linear-gradient(180deg,#4b2f1a,#2d1b10);border:1px solid #e5b84f;box-shadow:inset 1px 1px 0 rgba(255,230,126,.35),inset -1px -1px 0 rgba(0,0,0,.6);color:#ffe9a8;font-family:Philosopher,sans-serif;font-size:22px;line-height:1;cursor:pointer}
+.h3 .frame{border-radius:5px;background:radial-gradient(ellipse at 50% 0%,rgba(255,230,126,.08),transparent 60%),repeating-linear-gradient(90deg,rgba(0,0,0,.09) 0 2px,transparent 2px 13px),linear-gradient(180deg,#2b1c12,#1a110b);border:2px solid #c9a043;box-shadow:inset 0 0 0 1px #000,inset 0 0 0 3px #7a5a1e,inset 0 0 0 4px rgba(255,230,126,.22),inset 0 0 30px rgba(0,0,0,.5),0 0 0 1px #000,0 8px 22px rgba(0,0,0,.6)}
+.h3 .row{display:flex;align-items:center;gap:12px;min-height:44px}
+.h3 .row .ico{display:grid;place-items:center;width:36px;height:36px;border:1px solid #e5b84f;background:#1a110b;box-shadow:inset 0 0 0 2px #3a2a1c;color:#e5b84f;flex:0 0 36px;font-family:Philosopher,sans-serif;font-weight:700;font-size:16px}
+.h3 .row.unknown .ico{color:#8a7fa6;border-color:#5b3f8e}
+.h3 .row b{display:block;font-family:Philosopher,sans-serif;font-weight:700;font-size:14px}
+.h3 .row small{display:block;font-size:13px;font-style:italic;color:#c5b58b}
+.h3 .row.unknown b{color:#a79bbd}
+.h3 .row .st{margin-left:auto;color:#e5b84f;font-family:Philosopher,sans-serif;font-weight:700;font-size:14px}
+.h3 .row.unknown .st{color:#5b3f8e}
+.h3 kbd{display:inline-block;min-width:18px;padding:1px 5px;margin-left:4px;border:1px solid #7a5a1e;border-radius:2px;font-family:Philosopher,sans-serif;font-size:11px;color:#ffe9a8;text-align:center;background:#1a110b}
+</style>
+</helmet>
+<div style="width: 2000px; height: 620px; box-sizing: border-box; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); background: #0f1722">
+
+<div class="rd" style="display: flex; flex-direction: column; gap: 14px; padding: 28px 32px; background: radial-gradient(ellipse at 18% 0%, rgba(120,52,30,.28), transparent 42%), #120d0a; border-right: 1px solid rgba(255,255,255,.08)">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span class="kit-h" style="font-family: Oranienbaum, serif; font-size: 20px; letter-spacing: .1em; text-transform: uppercase">Red Dead</span><span class="blk-t">Oranienbaum · Cormorant Garamond</span></div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px">
+<div class="blk">
+<span class="blk-t">Палитра</span>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
+<div class="sw"><i style="background: #120d0a"></i>#120D0A фон</div>
+<div class="sw"><i style="background: #1f1611"></i>#1F1611 панель</div>
+<div class="sw"><i style="background: #efe2c4"></i>#EFE2C4 текст</div>
+<div class="sw"><i style="background: #b39b78"></i>#B39B78 тихий</div>
+<div class="sw"><i style="background: #d9b36a"></i>#D9B36A золото</div>
+<div class="sw"><i style="background: #c8432b"></i>#C8432B акцент</div>
+<div class="sw"><i style="background: #e7d6b1"></i>#E7D6B1 пергамент</div>
+<div class="sw"><i style="background: #3a2a1c"></i>#3A2A1C чернила</div>
+</div>
+</div>
+<div class="blk">
+<span class="blk-t">Типографика</span>
+<div style="font-family: Oranienbaum, serif; font-size: 34px; line-height: 1; letter-spacing: -.01em">Откройте мир</div>
+<div class="cap" style="color: #d9b36a">Журнал экспедиции · день 01</div>
+<div style="font-size: 17px; line-height: 1.5; color: #cdb996">За туманом скрывается неизвестное. <i>Следы ведут всё дальше.</i></div>
+</div>
+<div class="blk">
+<span class="blk-t">Кнопки и вкладки</span>
+<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+<button class="btn btn-primary" type="button">Вернуться к лагерю</button>
+<button class="btn" type="button">Журнал</button>
+<button class="icon-btn" type="button" aria-label="Увеличить масштаб">+</button>
+</div>
+<div style="display: flex; gap: 4px; border-bottom: 1px solid #3d2b1d"><button class="tab" type="button">Terra</button><button class="tab active" type="button">Red Dead</button></div>
+</div>
+<div class="blk">
+<span class="blk-t">Индикаторы</span>
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span class="cap" style="color: #b39b78">Открытая территория</span><strong style="font-family: Oranienbaum, serif; font-weight: 400; font-size: 20px; color: #d9b36a">23 %</strong></div>
+<div style="height: 4px; background: #2b1f17"><div style="width: 23%; height: 100%; background: linear-gradient(90deg, #b83a24, #d9b36a)"></div></div>
+<div class="cap" style="display: flex; align-items: center; gap: 10px; color: #b39b78"><span style="width: 8px; height: 8px; border-radius: 50%; background: #c8432b; box-shadow: 0 0 10px #c8432b"></span>Экспедиция активна</div>
+<div style="align-self: flex-start; padding: 8px 12px; background: rgba(15,23,34,.88); border: 1px solid rgba(245,168,102,.5); color: #edf3ec; font: 11px 'JetBrains Mono', monospace">ОТКРЫТО <span style="color: #f5a866">23 %</span> · HUD на карте</div>
+</div>
+<div class="blk">
+<span class="blk-t">Находки</span>
+<div class="row"><span class="ico"><svg width="18" height="18" fill="none" stroke="currentColor" style="stroke-width: 1.5; stroke-linejoin: round"><path d="M2 15L9 3l7 12zM9 3v12"></path></svg></span><span><b>Базовый лагерь</b><small>Отправная точка</small></span><span class="st">✓</span></div>
+<div class="row unknown"><span class="ico">?</span><span><b>Старая башня</b><small>Расстояние: 86 м</small></span><span class="st">·</span></div>
+</div>
+<div class="blk">
+<span class="blk-t">Панель и подсказка</span>
+<div class="panel" style="height: 64px; display: grid; place-items: center; color: #b39b78; font-style: italic; font-size: 14px">прошитый край, лента 1 px</div>
+<div style="align-self: flex-start; padding: 9px 12px; background: rgba(18,13,10,.82); font-family: Oranienbaum, serif; font-size: 12px; letter-spacing: .06em; border: 1px solid rgba(217,179,106,.35)">Используйте <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></div>
+</div>
+</div>
+</div>
+
+<div class="h3" style="display: flex; flex-direction: column; gap: 14px; padding: 28px 32px; background: radial-gradient(ellipse at 20% 0%, rgba(91,63,142,.38), transparent 42%), #0d0a16">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span class="kit-h" style="font-family: Philosopher, sans-serif; font-weight: 700; font-size: 20px; letter-spacing: .08em; text-transform: uppercase; color: #ffe9a8">Heroes III</span><span class="blk-t">Philosopher · Cormorant Garamond</span></div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px">
+<div class="blk">
+<span class="blk-t">Палитра</span>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
+<div class="sw"><i style="background: #0d0a16"></i>#0D0A16 фон</div>
+<div class="sw"><i style="background: #2b1c12"></i>#2B1C12 дерево</div>
+<div class="sw"><i style="background: #fff3c9"></i>#FFF3C9 текст</div>
+<div class="sw"><i style="background: #c5b58b"></i>#C5B58B тихий</div>
+<div class="sw"><i style="background: #e5b84f"></i>#E5B84F золото</div>
+<div class="sw"><i style="background: #5b3f8e"></i>#5B3F8E пурпур</div>
+<div class="sw"><i style="background: #4f8a2c"></i>#4F8A2C трава</div>
+<div class="sw"><i style="background: #000"></i>#000000 пелена</div>
+</div>
+</div>
+<div class="blk">
+<span class="blk-t">Типографика</span>
+<div style="font-family: Philosopher, sans-serif; font-weight: 700; font-size: 32px; line-height: 1; color: #ffe9a8; text-shadow: 0 2px 0 #3a2a1c">Откройте мир</div>
+<div class="cap" style="color: #e5b84f">Журнал экспедиции · день 01</div>
+<div style="font-size: 17px; line-height: 1.5; color: #d9cba6">За туманом скрывается неизвестное. <i>Следы ведут всё дальше.</i></div>
+</div>
+<div class="blk">
+<span class="blk-t">Кнопки и вкладки</span>
+<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+<button class="btn" type="button">Вернуться к лагерю</button>
+<button class="btn btn-ghost" type="button">Журнал</button>
+<button class="icon-btn" type="button" aria-label="Увеличить масштаб">+</button>
+</div>
+<div style="display: flex; gap: 6px"><button class="tab" type="button">Terra</button><button class="tab active" type="button">Heroes III</button></div>
+</div>
+<div class="blk">
+<span class="blk-t">Индикаторы</span>
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span class="cap" style="color: #c5b58b">Разведано</span><strong style="font-family: Philosopher, sans-serif; font-weight: 700; font-size: 20px; color: #e5b84f">31 %</strong></div>
+<div style="height: 8px; background: #120c08; border: 1px solid #7a5a1e; box-shadow: inset 0 1px 2px #000"><div style="width: 31%; height: 100%; background: linear-gradient(180deg, #ffe07a, #c9a043 55%, #8a6a1e); box-shadow: inset 0 1px 0 rgba(255,255,255,.4)"></div></div>
+<div class="cap" style="display: flex; align-items: center; gap: 10px; color: #c5b58b"><span style="width: 9px; height: 9px; border-radius: 2px; background: #5fcf6e; box-shadow: 0 0 10px #5fcf6e, inset 0 0 0 1px #1e5a28; transform: rotate(45deg)"></span>Экспедиция активна</div>
+<div style="align-self: flex-start; padding: 8px 12px; background: rgba(16,13,29,.9); border: 1px solid rgba(229,184,79,.6); color: #fff3c9; font: 11px 'JetBrains Mono', monospace">РАЗВЕДАНО <span style="color: #e5b84f">31 %</span> · HUD на карте</div>
+</div>
+<div class="blk">
+<span class="blk-t">Находки</span>
+<div class="row"><span class="ico"><svg width="18" height="18" fill="none" stroke="currentColor" style="stroke-width: 1.6; stroke-linejoin: round"><path d="M4 16V7h2V5h2v2h2V5h2v2h2v9zM7 16v-4h4v4"></path></svg></span><span><b>Старая башня</b><small>Обнаружено только что</small></span><span class="st">✓</span></div>
+<div class="row unknown"><span class="ico">?</span><span><b>Старая шахта</b><small>Расстояние: 6 клеток</small></span><span class="st">·</span></div>
+</div>
+<div class="blk">
+<span class="blk-t">Рама и подсказка</span>
+<div class="frame" style="height: 64px; display: grid; place-items: center; color: #c5b58b; font-style: italic; font-size: 14px">золото 2 px · бронза 3 px · дерево с волокном</div>
+<div style="align-self: flex-start; padding: 9px 12px; background: rgba(16,13,29,.88); color: #ffe9a8; font-family: Philosopher, sans-serif; font-size: 12px; letter-spacing: .04em; border: 1px solid #e5b84f; box-shadow: inset 0 0 0 1px #3a2a1c">Используйте <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></div>
+</div>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2000,"height":620}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

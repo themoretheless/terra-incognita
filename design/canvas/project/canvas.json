@@ -1,0 +1,33 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-10-08T22:12:00Z" },
+  "title": "Terra Incognita — проявление карты",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 0, "w": 960, "h": 600, "title": "Red Dead · пергамент" },
+    "Heroes.dc.html": { "x": 1040, "y": 0, "w": 960, "h": 608, "title": "Heroes III · пелена" },
+    "EdgeRedDead.dc.html": { "x": 0, "y": 1000, "w": 560, "h": 520, "title": "Край · Red Dead" },
+    "EdgeHeroes.dc.html": { "x": 640, "y": 1000, "w": 560, "h": 520, "title": "Край · Heroes III / IV" },
+    "Timeline.dc.html": { "x": 1280, "y": 1000, "w": 720, "h": 560, "title": "Анимация проявления" },
+    "Spec.dc.html": { "x": 0, "y": 1880, "w": 2000, "h": 700, "title": "Параметры и слои" },
+    "UIRedDead.dc.html": { "x": 0, "y": 2920, "w": 1320, "h": 1240, "title": "Страница · Red Dead", "expand": "fill" },
+    "UIHeroes.dc.html": { "x": 1400, "y": 2920, "w": 1328, "h": 790, "title": "Главное окно · Heroes III / IV", "expand": "fill" },
+    "UIKit.dc.html": { "x": 0, "y": 4568, "w": 2000, "h": 620, "title": "UI-кит · элементы двух стилей" },
+    "RTS.dc.html": { "x": 0, "y": 5590, "w": 960, "h": 608, "title": "Warcraft · StarCraft · AoE II" },
+    "RedAlert.dc.html": { "x": 1040, "y": 5590, "w": 960, "h": 608, "title": "Red Alert · пелена отрастает" },
+    "Moba.dc.html": { "x": 0, "y": 6318, "w": 960, "h": 608, "title": "Dota 2 · LoL · источники обзора" },
+    "Hex.dc.html": { "x": 1040, "y": 6318, "w": 960, "h": 608, "title": "Age of Wonders · Disciples · King's Bounty" },
+    "Spec2.dc.html": { "x": 0, "y": 7046, "w": 2000, "h": 560, "title": "Сравнение четырёх моделей" }
+  },
+  "order": ["Main.dc.html", "Heroes.dc.html", "EdgeRedDead.dc.html", "EdgeHeroes.dc.html", "Timeline.dc.html", "Spec.dc.html", "UIRedDead.dc.html", "UIHeroes.dc.html", "UIKit.dc.html", "RTS.dc.html", "RedAlert.dc.html", "Moba.dc.html", "Hex.dc.html", "Spec2.dc.html"],
+  "notes": {
+    "t1": { "x": 0, "y": -280, "text": "Проявление карты · Red Dead и Heroes III", "kind": "title1", "maxW": 2000 },
+    "t2": { "x": 0, "y": 740, "text": "Анатомия края и анимация", "kind": "title1", "maxW": 2000 },
+    "t3": { "x": 0, "y": 1620, "text": "Параметры и слои", "kind": "title1", "maxW": 2000 },
+    "t4": { "x": 0, "y": 2660, "text": "Интерфейс · страница Red Dead и главное окно Heroes", "kind": "title1", "maxW": 2728 },
+    "t5": { "x": 0, "y": 4308, "text": "UI-кит · элементы", "kind": "title1", "maxW": 2000 },
+    "t6": { "x": 0, "y": 5330, "text": "Ещё стили тумана · RTS, Red Alert, MOBA, гексы", "kind": "title1", "maxW": 2000 }
+  },
+  "designSystems": []
+}

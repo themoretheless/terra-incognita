@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Край пелены · Heroes III / IV · ×3</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0;background:#0f1722}
+.mark{position:absolute;display:grid;place-items:center;width:26px;height:26px;border-radius:4px;background:#e5b84f;color:#2a1a0e;font:500 12px 'JetBrains Mono',monospace;box-shadow:0 0 0 3px rgba(16,13,29,.85)}
+.dist{position:absolute;color:#fff3c9;font:11px 'JetBrains Mono',monospace;text-shadow:0 1px 2px #000,0 0 4px #000}
+.row{display:flex;align-items:flex-start;gap:12px}
+.row b{display:grid;place-items:center;flex:0 0 22px;width:22px;height:22px;border-radius:4px;background:#e5b84f;color:#2a1a0e;font:500 11px 'JetBrains Mono',monospace}
+.row strong{display:block;color:#fff3c9;font:600 13px/1.2 Manrope,sans-serif}
+.row span{display:block;margin-top:3px;color:#c5b58b;font:11px/1.4 'JetBrains Mono',monospace}
+</style>
+</helmet>
+<div style="width: 560px; height: 520px; display: flex; flex-direction: column; background: #100d1d; font-family: Manrope, sans-serif">
+<div style="position: relative; width: 560px; height: 360px; overflow: hidden; background: #000">
+<svg width="560" height="360" style="position: absolute; left: 0; top: 0; display: block">
+<defs>
+<filter id="edge3" x="-10%" y="-10%" width="120%" height="120%">
+<feTurbulence type="fractalNoise" baseFrequency="0.024" numOctaves="2" seed="5" result="noise"></feTurbulence>
+<feDisplacementMap in="SourceGraphic" in2="noise" scale="48" xChannelSelector="R" yChannelSelector="G" result="torn"></feDisplacementMap>
+<feGaussianBlur in="torn" stdDeviation="12"></feGaussianBlur>
+</filter>
+<filter id="fog3" x="-10%" y="-10%" width="120%" height="120%">
+<feGaussianBlur stdDeviation="9"></feGaussianBlur>
+</filter>
+</defs>
+<rect x="10" y="0" width="540" height="360" fill="#5a9234"></rect>
+<path d="{{tufts}}" stroke="#3f7524" fill="none" style="stroke-width: 4; stroke-linecap: round; stroke-linejoin: round"></path>
+<path d="{{roadD}}" fill="#7d5f36"></path>
+<path d="{{roadMid}}" fill="#9a7a48"></path>
+<path d="{{trunks}}" fill="#5a3a1e"></path>
+<path d="{{canopy}}" fill="#1f5a1e"></path>
+<path d="{{canopyL}}" fill="#3f8a2e"></path>
+<g transform="translate(118 96)">
+<path d="M12 84V26h8V16h10v10h14V16h10v10h8v58z" fill="#8f8f93"></path>
+<path d="M12 84h50v6H12z" fill="#55555a"></path>
+<path d="M30 84V60h14v24z" fill="#2b2b30"></path>
+</g>
+<path d="{{fog}}" fill="#10141f" opacity=".55" filter="url(#fog3)"></path>
+<path d="{{black}}" fill="#000" filter="url(#edge3)"></path>
+</svg>
+<sc-for list="{{cells}}" as="cell" hint-placeholder-count="6">
+<div class="dist" style="left: {{cell.lx}}px; top: {{cell.ly}}px">d {{cell.d}}</div>
+</sc-for>
+<div style="position: absolute; right: 14px; top: 14px; padding: 6px 9px; background: rgba(16,13,29,.9); color: #fff3c9; font: 11px 'JetBrains Mono', monospace; border: 1px solid rgba(229,184,79,.6)">Фрагмент · ×3 · R = 5.5</div>
+<div class="mark" style="left: 68px; top: 58px">1</div>
+<div class="mark" style="left: 248px; top: 148px">2</div>
+<div class="mark" style="left: 338px; top: 238px">3</div>
+<div class="mark" style="left: 428px; top: 328px">4</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 20px; padding: 18px 22px 16px">
+<div class="row"><b>1</b><div><strong>Видно</strong><span>d ≤ R от героя · полная яркость, клетки целиком</span></div></div>
+<div class="row"><b>2</b><div><strong>Туман · Heroes IV</strong><span>разведано раньше, вне обзора · затемнение 55 %, армий не видно</span></div></div>
+<div class="row"><b>3</b><div><strong>Кромка · Heroes III</strong><span>рваная и полупрозрачная · смещение 16 px · размытие 4 px</span></div></div>
+<div class="row"><b>4</b><div><strong>Пелена</strong><span>не разведано · #000 · объекты не рисуются</span></div></div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":560,"height":520}}'>
+class Component extends DCLogic {
+  noise(a, b) {
+    const v = Math.sin(a * 127.1 + b * 311.7) * 43758.5453;
+    return v - Math.floor(v);
+  }
+  renderVals() {
+    const T = 90;
+    const OX = 10;
+    const states = ['open', 'open', 'fog', 'edge', 'black', 'black'];
+    const dists = [3.6, 4.4, 6.2, 6.9, 7.8, 8.6];
+    let tufts = ''; let roadD = ''; let roadMid = ''; let trunks = ''; let canopy = ''; let canopyL = ''; let fog = ''; let black = '';
+    const cells = [];
+    const treeAt = [[1, 0], [0, 3], [2, 3], [3, 1], [4, 0]];
+    for (let r = 0; r < 4; r += 1) {
+      for (let c = 0; c < 8; c += 1) {
+        const x = OX + c * T; const y = r * T;
+        const cell = `M${x} ${y}h${T}v${T}h-${T}z`;
+        const s = c < 6 ? states[c] : 'black';
+        if (c < 6) {
+          if (r === 2 && c < 4) { roadD += cell; roadMid += `M${x + 20} ${y + 20}h${T - 40}v${T - 40}h-${T - 40}z`; }
+          else {
+            for (let k = 0; k < 3; k += 1) {
+              if (this.noise(c + k * 7, r + k * 3) > 0.35) {
+                const ox = 10 + this.noise(c + k, r + 9) * 62; const oy = 14 + this.noise(c + 9, r + k) * 58;
+                tufts += `M${x + ox} ${y + oy}l5 -11l5 11`;
+              }
+            }
+          }
+          if (treeAt.some((t) => t[0] === c && t[1] === r)) {
+            const cx = x + 45; const cy = y + 40;
+            trunks += `M${cx - 6} ${cy + 16}h12v28h-12z`;
+            canopy += `M${cx - 38} ${cy}a38 32 0 1 0 76 0a38 32 0 1 0 -76 0`;
+            canopyL += `M${cx - 22} ${cy - 12}a20 14 0 1 0 40 0a20 14 0 1 0 -40 0`;
+          }
+          cells.push({ lx: x + 8, ly: y + 6, d: (dists[c] + r * 0.12).toFixed(1) });
+        }
+        if (s === 'fog') fog += cell;
+        if (s === 'black') black += cell;
+      }
+    }
+    return { tufts, roadD, roadMid, trunks, canopy, canopyL, fog, black, cells };
+  }
+}
+</script>
+</body>
+</html>

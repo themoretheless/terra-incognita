@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Анимация проявления · кадры и треки</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0;background:#0f1722}
+.road{stroke:#3a2a1c;fill:none;stroke-width:1.5;stroke-dasharray:5 3;stroke-linecap:round}
+.contour{stroke:#8a704c;fill:none;stroke-width:.8}
+.tree{stroke:#3f3222;fill:#d6c59a;stroke-width:.9}
+.rim{mix-blend-mode:multiply}
+.h{color:#edf3ec;font:700 20px/1.2 Manrope,sans-serif;letter-spacing:-.02em}
+.sub{color:#9aa99f;font:11px/1.4 'JetBrains Mono',monospace}
+.lbl{display:flex;flex-direction:column;gap:4px;width:128px;flex:0 0 128px}
+.lbl strong{color:#edf3ec;font:600 13px/1.2 Manrope,sans-serif}
+.lbl span{color:#9aa99f;font:10px/1.4 'JetBrains Mono',monospace}
+.cap{color:#9aa99f;font:10px 'JetBrains Mono',monospace}
+.frame{display:flex;flex-direction:column;align-items:center;gap:6px}
+.track{display:flex;align-items:center;gap:16px;height:18px}
+.track em{display:block;width:128px;flex:0 0 128px;color:#9aa99f;font:10px 'JetBrains Mono',monospace;font-style:normal}
+.bar{position:relative;width:480px;height:10px;background:rgba(226,239,226,.08)}
+.bar i{position:absolute;top:0;height:10px}
+.ticks{position:relative;width:480px;height:14px;margin-left:144px}
+.ticks span{position:absolute;top:0;color:#66736b;font:9px 'JetBrains Mono',monospace}
+.curve{stroke:#f5a866;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.axis{stroke:rgba(226,239,226,.18);fill:none;stroke-width:1}
+</style>
+</helmet>
+<div style="width: 720px; height: 560px; box-sizing: border-box; padding: 28px; background: #0f1722; display: flex; flex-direction: column; gap: 20px; font-family: Manrope, sans-serif">
+<svg width="0" height="0" style="position: absolute">
+<defs>
+<filter id="brushs" x="-30%" y="-30%" width="160%" height="160%">
+<feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="3" seed="7" result="noise"></feTurbulence>
+<feDisplacementMap in="SourceGraphic" in2="noise" scale="6" xChannelSelector="R" yChannelSelector="G" result="torn"></feDisplacementMap>
+<feGaussianBlur in="torn" stdDeviation="0.7"></feGaussianBlur>
+</filter>
+<filter id="shroudS" x="-10%" y="-10%" width="120%" height="120%">
+<feTurbulence type="fractalNoise" baseFrequency="0.2" numOctaves="2" seed="5" result="noise"></feTurbulence>
+<feDisplacementMap in="SourceGraphic" in2="noise" scale="4" xChannelSelector="R" yChannelSelector="G" result="torn"></feDisplacementMap>
+<feGaussianBlur in="torn" stdDeviation="1"></feGaussianBlur>
+</filter>
+</defs>
+</svg>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<div class="h">Анимация проявления</div>
+<div class="sub">Один шаг путешественника · новая область радиуса R · 5 кадров</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; gap: 16px; align-items: flex-start">
+<div class="lbl">
+<strong>Red Dead</strong>
+<span>700 мс · ease-out cubic · радиус 18 % → 100 %</span>
+<svg width="120" height="44" style="display: block; margin-top: 4px">
+<path d="M0 44H120M0 44V0" class="axis"></path>
+<path d="{{easeCurve}}" class="curve"></path>
+</svg>
+</div>
+<div style="display: flex; gap: 10px">
+<sc-for list="{{rd}}" as="f" hint-placeholder-count="5">
+<div class="frame">
+<svg width="88" height="88" style="display: block">
+<defs>
+<mask id="ma{{f.i}}">
+<rect width="88" height="88" fill="#000"></rect>
+<circle cx="44" cy="44" r="{{f.r}}" fill="#fff" filter="url(#brushs)"></circle>
+</mask>
+</defs>
+<rect width="88" height="88" fill="#e7d6b1"></rect>
+<g mask="url(#ma{{f.i}})">
+<rect width="88" height="88" fill="#dcc497" opacity=".6"></rect>
+<path d="M-5 62C25 52 50 36 95 24" class="road"></path>
+<path d="M12 22c15-12 35-12 55 0M18 30c12-9 30-9 45 0" class="contour"></path>
+<path d="{{trees}}" class="tree"></path>
+</g>
+<circle cx="44" cy="44" r="{{f.r}}" fill="none" stroke="#3a2a1c" style="stroke-width: 1.6" opacity="{{f.rim}}" filter="url(#brushs)" class="rim"></circle>
+</svg>
+<span class="cap">{{f.t}} мс</span>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<div class="track"><em>Маска · радиус</em><div class="bar"><i style="left: 0; width: 336px; background: #f5a866"></i></div></div>
+<div class="track"><em>Кайма · прозрачность</em><div class="bar"><i style="left: 48px; width: 168px; background: #c08457"></i></div></div>
+<div class="track"><em>Подпись · дописывается</em><div class="bar"><i style="left: 192px; width: 240px; background: #e0c9a0"></i></div></div>
+<div class="ticks"><span style="left: 0">0</span><span style="left: 120px">250</span><span style="left: 240px">500</span><span style="left: 360px">750</span><span style="left: 460px">1000 мс</span></div>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; gap: 16px; align-items: flex-start">
+<div class="lbl">
+<strong>Heroes III / IV</strong>
+<span>по шагу героя · ~250 мс на клетку · кромка гаснет за 120 мс</span>
+<svg width="120" height="44" style="display: block; margin-top: 4px">
+<path d="M0 44H120M0 44V0" class="axis"></path>
+<path d="{{stepCurve}}" class="curve" style="stroke: #e5b84f"></path>
+</svg>
+</div>
+<div style="display: flex; gap: 10px">
+<sc-for list="{{h3}}" as="f" hint-placeholder-count="5">
+<div class="frame">
+<svg width="88" height="88" style="display: block">
+<rect width="88" height="88" fill="#5a9234"></rect>
+<path d="{{grassB}}" fill="#4f8a2c"></path>
+<path d="{{f.fog}}" fill="#10141f" opacity=".55"></path>
+<path d="{{f.black}}" fill="#000" filter="url(#shroudS)"></path>
+<rect x="{{f.hx}}" y="{{f.hy}}" width="7" height="9" fill="#5b3f8e"></rect>
+<rect x="{{f.hx}}" y="{{f.fy}}" width="3" height="3" fill="#e5b84f"></rect>
+</svg>
+<span class="cap">шаг {{f.n}}</span>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<div class="track"><em>Шаги героя · клетки</em><div class="bar"><i style="left: 0; width: 76px; background: #e5b84f"></i><i style="left: 80px; width: 76px; background: #c9a043"></i><i style="left: 160px; width: 76px; background: #e5b84f"></i><i style="left: 240px; width: 76px; background: #c9a043"></i><i style="left: 320px; width: 76px; background: #e5b84f"></i></div></div>
+<div class="track"><em>Кромка · гаснет</em><div class="bar"><i style="left: 0; width: 38px; background: #8a7fa6"></i><i style="left: 80px; width: 38px; background: #8a7fa6"></i><i style="left: 160px; width: 38px; background: #8a7fa6"></i><i style="left: 240px; width: 38px; background: #8a7fa6"></i><i style="left: 320px; width: 38px; background: #8a7fa6"></i></div></div>
+<div class="ticks"><span style="left: 0">0</span><span style="left: 160px">500</span><span style="left: 320px">1000</span><span style="left: 456px">1500 мс</span></div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":720,"height":560}}'>
+class Component extends DCLogic {
+  noise(a, b) {
+    const v = Math.sin(a * 127.1 + b * 311.7) * 43758.5453;
+    return v - Math.floor(v);
+  }
+  renderVals() {
+    const ease = (p) => 1 - Math.pow(1 - p, 3);
+    const rd = [0, 120, 300, 500, 700].map((t, i) => {
+      const e = ease(t / 700);
+      return { i, t, r: Math.round(36 * (0.18 + 0.82 * e) * 10) / 10, rim: Math.round(Math.min(1, t / 450) * 0.55 * 100) / 100 };
+    });
+    let trees = '';
+    for (let i = 0; i < 4; i += 1) {
+      const x = Math.round(14 + this.noise(5, i) * 60);
+      const y = Math.round(40 + this.noise(14, i) * 36);
+      trees += `M${x} ${y}v-5M${x - 2.5} ${y - 7}a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0 -5 0`;
+    }
+    const path = [[2, 6], [3, 5], [4, 4], [5, 3], [6, 2]];
+    const SR = 2.3;
+    let grassB = '';
+    for (let r = -1; r <= 9; r += 1) for (let c = -1; c <= 9; c += 1) if ((r + c) % 2) grassB += `M${3.5 + c * 9} ${3.5 + r * 9}h9v9h-9z`;
+    const h3 = path.map((pos, i) => {
+      let fog = ''; let black = '';
+      for (let r = -1; r <= 9; r += 1) {
+        for (let c = -1; c <= 9; c += 1) {
+          const cell = `M${3.5 + c * 9} ${3.5 + r * 9}h9v9h-9z`;
+          const dCur = Math.hypot(c - pos[0], r - pos[1]);
+          let dPrev = 99;
+          for (let k = 0; k < i; k += 1) dPrev = Math.min(dPrev, Math.hypot(c - path[k][0], r - path[k][1]));
+          if (dCur <= SR) continue;
+          if (dPrev <= SR) fog += cell; else black += cell;
+        }
+      }
+      return { i, n: i + 1, fog, black, hx: 3.5 + pos[0] * 9 + 1, hy: 3.5 + pos[1] * 9, fy: 3.5 + pos[1] * 9 - 2 };
+    });
+    let easeCurve = '';
+    for (let i = 0; i <= 24; i += 1) {
+      const p = i / 24;
+      easeCurve += `${i === 0 ? 'M' : 'L'}${i * 5} ${Math.round((44 - 44 * ease(p)) * 10) / 10}`;
+    }
+    const stepCurve = 'M0 44H24V35.2H48V26.4H72V17.6H96V8.8H120V0';
+    return { rd, h3, grassB, trees, easeCurve, stepCurve };
+  }
+}
+</script>
+</body>
+</html>

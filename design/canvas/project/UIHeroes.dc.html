@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Главное окно · Heroes III / IV</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Philosopher:wght@400;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap">
+<style>
+body{margin:0;background:#0d0a16;font-family:'Cormorant Garamond',serif}
+a{color:var(--text)}a:hover{color:var(--gold)}
+.cap{font-family:Philosopher,sans-serif;font-weight:700;font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.frame{position:relative;border-radius:5px;background:radial-gradient(ellipse at 50% 0%,rgba(255,230,126,.08),transparent 60%),repeating-linear-gradient(90deg,rgba(0,0,0,.09) 0 2px,transparent 2px 13px),linear-gradient(180deg,var(--wood1),var(--wood2));border:2px solid var(--gold);box-shadow:inset 0 0 0 1px #000,inset 0 0 0 3px var(--bronze),inset 0 0 0 4px rgba(255,230,126,.22),inset 0 0 46px rgba(0,0,0,.5),0 0 0 1px #000,0 1px 0 2px rgba(255,230,126,.12),0 16px 44px rgba(0,0,0,.65)}
+.gem{position:absolute;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffa392,#b4281c 48%,#4a0f0b 100%);box-shadow:0 0 0 2px var(--gold),0 0 0 3px #000,0 0 12px rgba(255,90,70,.55);z-index:2}
+.well{background:linear-gradient(180deg,#0e0905,#1a110b 70%,#1f140d);border:1px solid var(--bronze);border-radius:4px;box-shadow:inset 0 4px 10px rgba(0,0,0,.95),inset 0 0 0 1px #000,0 1px 0 rgba(255,230,126,.14)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 12px;border-radius:4px;background:linear-gradient(180deg,#5e3d21 0%,#3d2515 52%,#2a160c 100%);border:1px solid var(--gold);box-shadow:inset 0 1px 0 rgba(255,230,126,.5),inset 0 -2px 0 rgba(0,0,0,.65),inset 0 0 0 1px rgba(0,0,0,.6),0 3px 6px rgba(0,0,0,.6);color:#ffe9a8;text-shadow:0 1px 0 #000;font-family:Philosopher,sans-serif;font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
+.btn:hover{background:linear-gradient(180deg,#75502b 0%,#4d3019 52%,#34200f 100%);color:#fff6d6}
+.btn-big{min-height:48px;font-size:12px;letter-spacing:.14em;background:linear-gradient(180deg,#c49a3a 0%,#8f6c20 50%,#5c4210 100%);color:#fff8dc;box-shadow:inset 0 1px 0 rgba(255,240,170,.7),inset 0 -2px 0 rgba(0,0,0,.6),inset 0 0 0 1px rgba(0,0,0,.5),0 3px 8px rgba(0,0,0,.6),0 0 18px rgba(229,184,79,.3)}
+.btn-big:hover{background:linear-gradient(180deg,#d8ad46 0%,#a37f28 50%,#6a4c14 100%)}
+.tab{min-height:40px;padding:0 14px;border-radius:4px;background:linear-gradient(180deg,#3f2817,#241510);border:1px solid var(--bronze);box-shadow:inset 0 1px 0 rgba(255,230,126,.2),inset 0 -1px 0 rgba(0,0,0,.6);color:#c5b58b;text-shadow:0 1px 0 #000;font-family:Philosopher,sans-serif;font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.tab:hover{color:#fff3c9}
+.tab.active{color:#ffe9a8;border-color:var(--gold);background:linear-gradient(180deg,#6b4ba3,#3a2560);box-shadow:inset 0 1px 0 rgba(255,230,126,.35),inset 0 -2px 0 rgba(0,0,0,.6),0 0 10px rgba(91,63,142,.5)}
+.portrait{display:grid;place-items:center;width:56px;height:56px;border-radius:4px;background:radial-gradient(circle at 50% 30%,#4b3a7a,#15101f 78%);border:1px solid var(--gold);box-shadow:inset 0 0 0 1px #000,inset 0 0 0 2px var(--bronze),inset 0 0 16px rgba(0,0,0,.85),0 2px 6px rgba(0,0,0,.6);color:#ffe9a8}
+.bar{width:9px;height:56px;border-radius:4px;overflow:hidden;background:linear-gradient(180deg,#0e0905,#1a110b);border:1px solid var(--bronze);box-shadow:inset 0 2px 4px #000;display:flex;flex-direction:column;justify-content:flex-end}
+.bar i{display:block;width:100%;box-shadow:inset 2px 0 0 rgba(255,255,255,.35),inset -1px 0 0 rgba(0,0,0,.35)}
+.stat{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;border-radius:4px;background:linear-gradient(180deg,#1f140d,#120c08);border:1px solid var(--bronze);box-shadow:inset 0 1px 0 rgba(255,230,126,.12),inset 0 -3px 8px rgba(0,0,0,.6);color:#ffe9a8}
+.stat svg{color:var(--gold);filter:drop-shadow(0 1px 0 #000)}
+.stat b{font-family:Philosopher,sans-serif;font-weight:700;font-size:13px;text-shadow:0 1px 0 #000}
+.stat span{font-size:11px;color:#c5b58b;font-family:Philosopher,sans-serif;letter-spacing:.06em;text-transform:uppercase}
+.res{display:flex;align-items:center;gap:8px;padding:0 14px;height:36px;color:#ffe9a8;text-shadow:0 1px 0 #000;font-family:Philosopher,sans-serif;font-weight:700;font-size:13px;border-right:1px solid var(--bronze);box-shadow:1px 0 0 rgba(255,230,126,.1);white-space:nowrap}
+.res svg{color:var(--gold);filter:drop-shadow(0 1px 0 #000)}
+.res small{font-weight:400;font-size:11px;color:#c5b58b;letter-spacing:.06em;text-transform:uppercase}
+kbd{display:inline-block;min-width:18px;padding:1px 5px;margin-left:4px;border:1px solid var(--bronze);border-radius:2px;font-family:Philosopher,sans-serif;font-size:11px;color:#ffe9a8;text-align:center;background:#1a110b}
+</style>
+</helmet>
+<div style="min-height: 100vh; --gold: {{gold}}; --bronze: {{bronze}}; --wood1: {{wood1}}; --wood2: {{wood2}}; --text: {{text}}; color: {{text}}; background: radial-gradient(ellipse at 20% 0%, rgba(91,63,142,.35), transparent 42%), repeating-linear-gradient(0deg, rgba(255,255,255,.012) 0 2px, transparent 2px 7px), {{page}}">
+<div style="max-width: 1280px; margin: 0 auto; padding: 24px; display: flex; flex-direction: column; gap: 8px">
+
+<header class="frame" style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; min-height: 52px; padding: 4px 14px">
+<a href="#" aria-label="Terra Incognita" style="display: flex; align-items: center; gap: 10px; text-decoration: none; font-family: Philosopher, sans-serif; font-weight: 700; font-size: 17px; letter-spacing: .12em; text-transform: uppercase; color: #ffe9a8">
+<svg width="20" height="20" fill="#e5b84f" stroke="#7a5a1e" style="stroke-width: 1; stroke-linejoin: round"><path d="M10 1.5l2.2 5.8L18 10l-5.8 2.7L10 18.5l-2.2-5.8L2 10l5.8-2.3z"></path></svg>
+<span>Terra <span style="color: #c5b58b">Incognita</span></span>
+</a>
+<nav aria-label="Стиль карты" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap">
+<span class="cap" style="color: #c5b58b; margin-right: 6px">Стиль</span>
+<button class="tab" type="button">Terra Incognita</button>
+<button class="tab active" type="button">Heroes</button>
+<button class="tab" type="button">Red Dead</button>
+</nav>
+<div class="cap" style="display: flex; align-items: center; gap: 12px; color: #c5b58b">
+<span style="width: 9px; height: 9px; border-radius: 2px; background: #5fcf6e; box-shadow: 0 0 10px #5fcf6e, inset 0 0 0 1px #1e5a28; transform: rotate(45deg)"></span>
+<span>Экспедиция активна</span>
+<span style="height: 14px; border-left: 1px solid var(--bronze)"></span>
+<span>06:42</span>
+</div>
+</header>
+
+<section aria-label="Окно экспедиции" style="display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start">
+<div class="frame" style="flex: 999 1 560px; min-width: 0; padding: 4px">
+<span class="gem" style="left: -6px; top: -6px"></span><span class="gem" style="right: -6px; top: -6px"></span><span class="gem" style="left: -6px; bottom: -6px"></span><span class="gem" style="right: -6px; bottom: -6px"></span>
+<div style="position: relative; height: 608px; overflow: hidden; background: #000">
+<dc-import name="Heroes" annotations="{{off}}" hint-size="960px,608px"></dc-import>
+<div style="position: absolute; left: 14px; bottom: 14px; padding: 8px 12px; background: rgba(16,13,29,.88); color: #ffe9a8; font-family: Philosopher, sans-serif; font-size: 12px; letter-spacing: .04em; border: 1px solid var(--gold); box-shadow: inset 0 0 0 1px #3a2a1c">Перемещайтесь по карте или используйте <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></div>
+</div>
+</div>
+
+<aside class="frame" style="flex: 1 1 304px; max-width: 100%; box-sizing: border-box; padding: 8px; display: flex; flex-direction: column; gap: 8px">
+<span class="gem" style="left: -6px; top: -6px"></span><span class="gem" style="right: -6px; top: -6px"></span><span class="gem" style="left: -6px; bottom: -6px"></span><span class="gem" style="right: -6px; bottom: -6px"></span>
+
+<div class="well" style="height: 140px; display: grid; place-items: center" aria-label="Миникарта">
+<svg width="280" height="128" style="display: block">
+<defs><filter id="mmSoft" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="2.5"></feGaussianBlur></filter></defs>
+<rect width="280" height="128" fill="#000"></rect>
+<g transform="translate(34 0)">
+<g filter="url(#mmSoft)">
+<circle cx="70" cy="114" r="40" fill="#2f5a1c"></circle>
+<circle cx="100" cy="92" r="40" fill="#2f5a1c"></circle>
+<circle cx="129" cy="70" r="40" fill="#2f5a1c"></circle>
+<circle cx="151" cy="55" r="40" fill="#5a9234"></circle>
+</g>
+<path d="M161 -2C159 18 150 34 148 50C146 66 138 76 134 94C130 112 120 122 116 132" stroke="#2b5d9e" fill="none" style="stroke-width: 3" opacity=".9"></path>
+<path d="M70 114C100 92 115 80 129 70C140 62 146 58 151 55" stroke="#9a7a48" fill="none" style="stroke-width: 1.5"></path>
+<circle cx="153" cy="55" r="4" fill="#e5b84f" stroke="#fff3c9" style="stroke-width: 1"></circle>
+<rect x="0.5" y="0.5" width="221" height="127" fill="none" stroke="#ffe9a8" style="stroke-width: 1" opacity=".9"></rect>
+</g>
+</svg>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span class="cap" style="color: #c5b58b">Путешественник</span>
+<div style="display: flex; gap: 6px; align-items: flex-end">
+<div class="portrait" aria-label="Исследователь"><svg width="30" height="30" fill="none" stroke="currentColor" style="stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round"><circle cx="15" cy="9" r="5"></circle><path d="M5 27c1-7 5-10 10-10s9 3 10 10M9 17l-4 6M21 17l4 6"></path></svg></div>
+<div class="bar" aria-label="Ход 18 из 30"><i style="height: 60%; background: linear-gradient(90deg, #5fcf6e, #2f8a44)"></i></div>
+<div class="bar" aria-label="Обзор 5 из 5"><i style="height: 100%; background: linear-gradient(90deg, #8fbde8, #2b5d9e)"></i></div>
+<div style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #c5b58b; line-height: 1.2"><span>Ход <b style="color: #ffe9a8">18/30</b></span><span>Обзор <b style="color: #ffe9a8">5 кл</b></span></div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span class="cap" style="color: #c5b58b">Лагерь</span>
+<div style="display: flex; gap: 8px; align-items: flex-end">
+<div class="portrait" aria-label="Базовый лагерь"><svg width="30" height="30" fill="none" stroke="currentColor" style="stroke-width: 1.6; stroke-linejoin: round"><path d="M3 25L15 5l12 20zM15 5v20M11 25l4-9 4 9"></path></svg></div>
+<div style="font-size: 13px; color: #c5b58b; line-height: 1.3"><b style="display: block; color: #ffe9a8; font-family: Philosopher, sans-serif; font-size: 13px">Базовый лагерь</b>Сектор 01</div>
+</div>
+</div>
+</div>
+
+<div class="well" style="padding: 10px; display: flex; flex-direction: column; gap: 8px" aria-label="Сведения">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><b style="font-family: Philosopher, sans-serif; font-weight: 700; font-size: 14px; color: #ffe9a8">Исследователь</b><span class="cap" style="color: #e5b84f">День 01</span></div>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px">
+<div class="stat"><svg width="18" height="18" fill="none" stroke="currentColor" style="stroke-width: 1.5; stroke-linejoin: round"><circle cx="9" cy="9" r="7.5"></circle><path d="M12.5 5.5l-2.5 5-5 2.5 2.5-5z"></path></svg><b>31 %</b><span>Открыто</span></div>
+<div class="stat"><svg width="18" height="18" fill="none" stroke="currentColor" style="stroke-width: 1.5; stroke-linejoin: round"><path d="M4 16V2h10l-2 3.5 2 3.5H4"></path></svg><b>2 / 3</b><span>Находки</span></div>
+<div class="stat"><svg width="18" height="18" fill="none" stroke="currentColor" style="stroke-width: 1.5; stroke-linecap: round"><path d="M4 14c0-4 2-6 5-6s5 2 5 6M9 2v3M3 8l2 1M15 8l-2 1"></path></svg><b>124</b><span>Шагов</span></div>
+<div class="stat"><svg width="18" height="18" fill="none" stroke="currentColor" style="stroke-width: 1.5; stroke-linecap: round"><circle cx="9" cy="9" r="5"></circle><path d="M9 1v3M9 14v3M1 9h3M14 9h3"></path></svg><b>30 м</b><span>Радиус</span></div>
+</div>
+<div style="display: flex; justify-content: space-between; font-size: 13px; color: #c5b58b"><span>Позиция</span><b style="color: #ffe9a8; font-family: Philosopher, sans-serif; font-size: 12px; letter-spacing: .04em">48.857° N · 2.352° E</b></div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px">
+<button class="btn" type="button"><svg width="16" height="16" fill="none" stroke="currentColor" style="stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round"><circle cx="8" cy="8" r="6.5"></circle><path d="M6 5l3 3-3 3"></path></svg>Следующая цель</button>
+<button class="btn" type="button"><svg width="16" height="16" fill="none" stroke="currentColor" style="stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round"><path d="M2 13c3-6 5-2 8-6s3-4 4-6M12 3h2v2"></path></svg>Проложить путь</button>
+<button class="btn" type="button"><svg width="16" height="16" fill="none" stroke="currentColor" style="stroke-width: 1.6; stroke-linejoin: round"><path d="M3 2h10v12H3zM8 2v12M5 5h1M10 5h1"></path></svg>Журнал</button>
+<button class="btn" type="button"><svg width="16" height="16" fill="none" stroke="currentColor" style="stroke-width: 1.6; stroke-linejoin: round"><path d="M8 2l6 3-6 3-6-3zM2 8l6 3 6-3M2 11l6 3 6-3"></path></svg>Стиль карты</button>
+<button class="btn" type="button"><svg width="16" height="16" fill="none" stroke="currentColor" style="stroke-width: 1.6; stroke-linejoin: round"><circle cx="8" cy="8" r="2.5"></circle><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.5 1.5M11.5 11.5L13 13M3 13l1.5-1.5M11.5 4.5L13 3"></path></svg>Настройки</button>
+<button class="btn" type="button"><svg width="16" height="16" fill="none" stroke="currentColor" style="stroke-width: 1.6; stroke-linejoin: round"><path d="M2 14L8 3l6 11zM8 3v11"></path></svg>К лагерю</button>
+</div>
+
+<button class="btn btn-big" type="button" style="margin-top: auto"><svg width="18" height="18" fill="none" stroke="currentColor" style="stroke-width: 1.6; stroke-linejoin: round"><path d="M4 2h10M4 16h10M5 2c0 5 4 5 4 7s-4 2-4 7M13 2c0 5-4 5-4 7s4 2 4 7"></path></svg>Завершить день</button>
+</aside>
+</section>
+
+<footer class="frame" style="display: flex; align-items: center; flex-wrap: wrap; min-height: 52px; padding: 6px 4px">
+<div class="res"><svg width="16" height="16" fill="none" stroke="currentColor" style="stroke-width: 1.5; stroke-linecap: round"><circle cx="8" cy="8" r="3.5"></circle><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.5 1.5M11.5 11.5L13 13M3 13l1.5-1.5M11.5 4.5L13 3"></path></svg><small>День</small>01</div>
+<div class="res"><svg width="16" height="16" fill="none" stroke="currentColor" style="stroke-width: 1.5; stroke-linecap: round"><circle cx="8" cy="8" r="6.5"></circle><path d="M8 4v4l3 2"></path></svg>06:42</div>
+<div class="res"><svg width="16" height="16" fill="none" stroke="currentColor" style="stroke-width: 1.5; stroke-linejoin: round"><circle cx="8" cy="8" r="6.5"></circle><path d="M11 5l-2 4-4 2 2-4z"></path></svg><small>Открыто</small>31 %</div>
+<div class="res"><svg width="16" height="16" fill="none" stroke="currentColor" style="stroke-width: 1.5; stroke-linejoin: round"><path d="M4 15V2h9l-2 3 2 3H4"></path></svg><small>Находки</small>2 / 3</div>
+<div class="res"><svg width="16" height="16" fill="none" stroke="currentColor" style="stroke-width: 1.5; stroke-linecap: round"><path d="M3 12c0-3 2-5 5-5s5 2 5 5M8 2v3M3 7l1.5 1M13 7l-1.5 1"></path></svg><small>Шагов</small>124</div>
+<div class="res"><svg width="16" height="16" fill="none" stroke="currentColor" style="stroke-width: 1.5; stroke-linecap: round"><circle cx="8" cy="8" r="4.5"></circle><path d="M8 1v2.5M8 12.5V15M1 8h2.5M12.5 8H15"></path></svg>48.857° N · 2.352° E</div>
+<div class="well" style="flex: 1 1 240px; min-width: 0; margin: 0 6px 0 10px; height: 34px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 12px; font-size: 14px; color: #c5b58b; font-style: italic"><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">Тихая переправа обнаружена. Последнее сохранение: только что.</span><span class="cap" style="font-style: normal; color: #e5b84f; white-space: nowrap">Неделя 1 · День 1</span></div>
+</footer>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"edition":{"editor":"enum","default":"Heroes III","options":["Heroes III","Heroes IV"],"section":"Оформление"},"$preview":{"width":1328,"height":790}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const four = (this.props.edition ?? 'Heroes III') === 'Heroes IV';
+    return {
+      off: false,
+      gold: four ? '#b8a26a' : '#c9a043',
+      bronze: four ? '#4f5a70' : '#7a5a1e',
+      wood1: four ? '#2a3140' : '#2b1c12',
+      wood2: four ? '#171c28' : '#1a110b',
+      text: four ? '#e9e4d2' : '#fff3c9',
+      page: four ? '#0a0d14' : '#0d0a16'
+    };
+  }
+}
+</script>
+</body>
+</html>

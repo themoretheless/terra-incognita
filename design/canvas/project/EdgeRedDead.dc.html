@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Край пелены · Red Dead · ×3</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oranienbaum&family=Manrope:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0;background:#0f1722}
+.ink{stroke:#3a2a1c;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:4}
+.road{stroke:#3a2a1c;fill:none;stroke-width:5;stroke-dasharray:21 12;stroke-linecap:round}
+.contour{stroke:#8a704c;fill:none;stroke-width:2.6}
+.river-edge{stroke:#56634f;fill:none;stroke-width:44;stroke-linecap:round}
+.river-fill{stroke:#c5cfc0;fill:none;stroke-width:36;stroke-linecap:round}
+.hatch{stroke:#56634f;fill:none;stroke-width:2.4;opacity:.7}
+.tree{stroke:#3f3222;fill:#d6c59a;stroke-width:3.2}
+.scribble{stroke:#cbb892;fill:none;stroke-width:3.8;stroke-linecap:round}
+.ghost{stroke:#cdbb95;fill:none;stroke-width:3.4;stroke-linejoin:round}
+.label{font-family:Oranienbaum,serif;font-size:30px;fill:#2f2214;letter-spacing:.03em}
+.rim{mix-blend-mode:multiply}
+.grain{mix-blend-mode:multiply}
+.mark{position:absolute;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#f5a866;color:#2a1a0e;font:500 12px 'JetBrains Mono',monospace;box-shadow:0 0 0 3px rgba(15,23,34,.85)}
+.row{display:flex;align-items:flex-start;gap:12px}
+.row b{display:grid;place-items:center;flex:0 0 22px;width:22px;height:22px;border-radius:50%;background:#f5a866;color:#2a1a0e;font:500 11px 'JetBrains Mono',monospace}
+.row strong{display:block;color:#edf3ec;font:600 13px/1.2 Manrope,sans-serif}
+.row span{display:block;margin-top:3px;color:#9aa99f;font:11px/1.4 'JetBrains Mono',monospace}
+</style>
+</helmet>
+<div style="width: 560px; height: 520px; display: flex; flex-direction: column; background: #0f1722; font-family: Manrope, sans-serif">
+<div style="position: relative; width: 560px; height: 360px; overflow: hidden; background: #e7d6b1">
+<svg width="560" height="360" style="position: absolute; left: 0; top: 0; display: block">
+<defs>
+<filter id="brush3" x="-30%" y="-30%" width="160%" height="160%">
+<feTurbulence type="fractalNoise" baseFrequency="0.0075" numOctaves="3" seed="7" result="noise"></feTurbulence>
+<feDisplacementMap in="SourceGraphic" in2="noise" scale="{{brushScale}}" xChannelSelector="R" yChannelSelector="G" result="torn"></feDisplacementMap>
+<feGaussianBlur in="torn" stdDeviation="{{edgeBlur}}"></feGaussianBlur>
+</filter>
+<filter id="bleed3" x="-30%" y="-30%" width="160%" height="160%">
+<feTurbulence type="fractalNoise" baseFrequency="0.0075" numOctaves="3" seed="7" result="noise"></feTurbulence>
+<feDisplacementMap in="SourceGraphic" in2="noise" scale="{{brushScale}}" xChannelSelector="R" yChannelSelector="G" result="torn"></feDisplacementMap>
+<feGaussianBlur in="torn" stdDeviation="12"></feGaussianBlur>
+</filter>
+<filter id="grain3" x="0" y="0" width="100%" height="100%">
+<feTurbulence type="fractalNoise" baseFrequency="0.3" numOctaves="2" seed="3"></feTurbulence>
+<feColorMatrix type="saturate" values="0"></feColorMatrix>
+</filter>
+<mask id="explored3">
+<rect width="560" height="360" fill="#000"></rect>
+<path d="{{blob}}" fill="#fff" filter="url(#brush3)"></path>
+</mask>
+</defs>
+<rect width="560" height="360" fill="#e7d6b1"></rect>
+<ellipse cx="470" cy="90" rx="120" ry="70" fill="#d9c49a" opacity=".3"></ellipse>
+<path class="scribble" d="M400 250c30-20 50 10 80-6s40-24 70-10M420 310c26-22 48 4 76-10"></path>
+<path class="ghost" d="M440 150l22-30 22 30M490 136l20-26 20 26"></path>
+<g mask="url(#explored3)">
+<rect width="560" height="360" fill="#dcc497" opacity=".6"></rect>
+<path class="contour" d="M20 60c40-30 100-30 150 0M30 82c40-25 90-25 130 0M44 104c30-18 70-18 100 0"></path>
+<path class="river-edge" d="M250 -20C240 60 200 110 210 180C220 250 180 300 160 390"></path>
+<path class="river-fill" d="M250 -20C240 60 200 110 210 180C220 250 180 300 160 390"></path>
+<path class="hatch" d="M228 40c10 6 20 2 30-4M214 110c10 6 20 2 30-4M204 190c10 6 20 2 30-4M186 260c10 6 20 2 30-4M170 330c10 6 20 2 30-4"></path>
+<path class="road" d="M-10 330C80 300 150 260 250 250C300 245 330 220 360 180"></path>
+<path class="tree" d="{{trees}}"></path>
+<path class="ink" d="M40 320l30-50 30 50zM70 270v50"></path>
+<text x="110" y="334" class="label">Базовый лагерь</text>
+</g>
+<path d="{{blob}}" fill="none" stroke="#8a6a44" style="stroke-width: 27" opacity=".2" filter="url(#bleed3)" class="rim"></path>
+<path d="{{blob}}" fill="none" stroke="#3a2a1c" style="stroke-width: 9" opacity="{{rimOpacity}}" filter="url(#brush3)" class="rim"></path>
+<rect width="560" height="360" filter="url(#grain3)" opacity=".13" class="grain"></rect>
+</svg>
+<div style="position: absolute; left: 14px; top: 14px; padding: 6px 9px; background: rgba(15,23,34,.88); color: #edf3ec; font: 11px 'JetBrains Mono', monospace; border: 1px solid rgba(245,168,102,.5)">Фрагмент · ×3</div>
+<div class="mark" style="left: 468px; top: 196px">1</div>
+<div class="mark" style="left: 342px; top: 118px">2</div>
+<div class="mark" style="left: 296px; top: 232px">3</div>
+<div class="mark" style="left: 372px; top: 300px">4</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 20px; padding: 18px 22px 16px">
+<div class="row"><b>1</b><div><strong>Пелена</strong><span>пергамент #E7D6B1 · зерно 12 % · детали скрыты, только намёки</span></div></div>
+<div class="row"><b>2</b><div><strong>Рваный край</strong><span>шум 0.022 · смещение 26 px · размытие 1.6 px</span></div></div>
+<div class="row"><b>3</b><div><strong>Чернильная кайма</strong><span>3 px · #3A2A1C · multiply · 55 %</span></div></div>
+<div class="row"><b>4</b><div><strong>Растекание</strong><span>ореол 9 px · 20 % · размытие 4 px · то же смещение</span></div></div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"brushScale":{"editor":"range","default":78,"min":0,"max":160,"step":2,"unit":"px","section":"Край ×3"},"edgeBlur":{"editor":"range","default":4.8,"min":0,"max":18,"step":0.4,"unit":"px","section":"Край ×3"},"rimOpacity":{"editor":"range","default":0.55,"min":0,"max":1,"step":0.05,"section":"Край ×3"},"$preview":{"width":560,"height":520}}'>
+class Component extends DCLogic {
+  noise(a, b) {
+    const v = Math.sin(a * 127.1 + b * 311.7) * 43758.5453;
+    return v - Math.floor(v);
+  }
+  trees(x0, y0, w, h, n, seed) {
+    let d = '';
+    for (let i = 0; i < n; i += 1) {
+      const x = Math.round(x0 + this.noise(seed, i) * w);
+      const y = Math.round(y0 + this.noise(seed + 9, i) * h);
+      d += `M${x} ${y}v-21M${x - 10.5} ${y - 30}a10.5 10.5 0 1 0 21 0a10.5 10.5 0 1 0 -21 0`;
+    }
+    return d;
+  }
+  renderVals() {
+    const p = this.props;
+    return {
+      brushScale: p.brushScale ?? 78,
+      edgeBlur: p.edgeBlur ?? 4.8,
+      rimOpacity: p.rimOpacity ?? 0.55,
+      blob: 'M-40 -40H330C300 40 350 110 320 180C290 250 345 310 310 400H-40Z',
+      trees: this.trees(40, 150, 120, 90, 7, 4)
+    };
+  }
+}
+</script>
+</body>
+</html>

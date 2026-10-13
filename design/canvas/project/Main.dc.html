@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Red Dead · проявление карты</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oranienbaum&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0;background:#0f1722}
+.ink{stroke:#3a2a1c;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.6}
+.label{font-family:Oranienbaum,serif;font-size:18px;fill:#2f2214;letter-spacing:.03em}
+.label-bg{stroke:#e7d6b1;stroke-width:5;stroke-linejoin:round;fill:#e7d6b1;opacity:.85}
+.label-sm{font-family:Oranienbaum,serif;font-size:13px;fill:#5a4630}
+.scribble{stroke:#cbb892;fill:none;stroke-width:1.3;stroke-linecap:round}
+.ghost{stroke:#cdbb95;fill:none;stroke-width:1.2;stroke-linejoin:round}
+.rim{mix-blend-mode:multiply}
+.grain{mix-blend-mode:multiply}
+.chip{position:absolute;display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(15,23,34,.88);color:#edf3ec;font:11px/1.3 'JetBrains Mono',monospace;letter-spacing:.01em;border:1px solid rgba(245,168,102,.5);white-space:nowrap}
+.chip b{display:grid;place-items:center;flex:0 0 18px;width:18px;height:18px;border-radius:50%;background:#f5a866;color:#2a1a0e;font-size:11px;font-weight:500}
+</style>
+</helmet>
+<div style="position: relative; width: 960px; height: 600px; overflow: hidden; background: #e7d6b1; font-family: Oranienbaum, serif">
+<svg width="960" height="600" style="position: absolute; left: 0; top: 0; display: block">
+<defs>
+<filter id="brush" x="-25%" y="-25%" width="150%" height="150%">
+<feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="3" seed="7" result="noise"></feTurbulence>
+<feDisplacementMap in="SourceGraphic" in2="noise" scale="{{brushScale}}" xChannelSelector="R" yChannelSelector="G" result="torn"></feDisplacementMap>
+<feGaussianBlur in="torn" stdDeviation="{{edgeBlur}}"></feGaussianBlur>
+</filter>
+<filter id="bleed" x="-25%" y="-25%" width="150%" height="150%">
+<feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="3" seed="7" result="noise"></feTurbulence>
+<feDisplacementMap in="SourceGraphic" in2="noise" scale="{{brushScale}}" xChannelSelector="R" yChannelSelector="G" result="torn"></feDisplacementMap>
+<feGaussianBlur in="torn" stdDeviation="4"></feGaussianBlur>
+</filter>
+<filter id="grain" x="0" y="0" width="100%" height="100%">
+<feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="3"></feTurbulence>
+<feColorMatrix type="saturate" values="0"></feColorMatrix>
+</filter>
+<mask id="explored">
+<rect width="960" height="600" fill="#000"></rect>
+<path d="{{blob}}" fill="#fff" filter="url(#brush)"></path>
+<circle cx="600" cy="232" r="{{bloomR}}" fill="#fff" opacity=".82" filter="url(#brush)"></circle>
+</mask>
+<mask id="notbloom">
+<rect width="960" height="600" fill="#fff"></rect>
+<circle cx="600" cy="232" r="{{bloomCut}}" fill="#000"></circle>
+</mask>
+<mask id="notblob">
+<rect width="960" height="600" fill="#fff"></rect>
+<path d="{{blob}}" fill="#000" filter="url(#brush)"></path>
+</mask>
+<clipPath id="writing">
+<rect x="668" y="158" width="{{labelW}}" height="30"></rect>
+</clipPath>
+</defs>
+
+<rect width="960" height="600" fill="#e7d6b1"></rect>
+<ellipse cx="760" cy="120" rx="150" ry="70" fill="#d9c49a" opacity=".32"></ellipse>
+<ellipse cx="180" cy="520" rx="130" ry="60" fill="#d9c49a" opacity=".22"></ellipse>
+<ellipse cx="840" cy="420" rx="90" ry="110" fill="#d9c49a" opacity=".18"></ellipse>
+<path class="scribble" d="M740 150c18-10 30 8 48-2s26-14 44-4M820 330c14-12 30 2 46-8s24-10 40-2M300 110c16-8 28 6 46-2s22-12 40-6M500 70c14-10 28 4 44-4s22-10 38-4M860 470c12-10 26 2 42-6M120 330c14-8 26 4 40-2"></path>
+<path class="ghost" d="M790 300l12-16 12 16M815 292l11-14 11 14M250 140l10-13 10 13M278 150l9-12 9 12M400 520l10-13 10 13"></path>
+<text x="690" y="470" class="label" style="font-size: 26px; fill: #c2ab80" transform="rotate(-7 690 470)">неизведанные земли</text>
+
+<g mask="url(#explored)">
+<image href="{{mapHref}}" x="0" y="-4" width="960" height="608" style="filter: {{mapFilter}}"></image>
+<rect width="960" height="600" fill="#d8bf8e" opacity="{{tint}}" style="mix-blend-mode: multiply"></rect>
+<path class="ink" d="M136 482l14-24 14 24zM150 458v24"></path>
+<text x="170" y="488" class="label label-bg">Базовый лагерь</text>
+<text x="170" y="488" class="label">Базовый лагерь</text>
+<path class="ink" d="M384 346h32M384 358h32M388 346v12M412 346v12"></path>
+<text x="372" y="382" class="label label-bg">Тихая переправа</text>
+<text x="372" y="382" class="label">Тихая переправа</text>
+<path class="ink" d="M648 182v-18h3v-3h3v3h3v-3h3v3h3v18zM654 182v-6h4v6"></path>
+<g clip-path="url(#writing)"><text x="668" y="180" class="label label-bg">Старая башня</text><text x="668" y="180" class="label">Старая башня</text></g>
+</g>
+
+<g mask="url(#notbloom)">
+<path d="{{blob}}" fill="none" stroke="#8a6a44" style="stroke-width: 9" opacity=".2" filter="url(#bleed)" class="rim"></path>
+<path d="{{blob}}" fill="none" stroke="#3a2a1c" style="stroke-width: 3" opacity="{{rimOpacity}}" filter="url(#brush)" class="rim"></path>
+</g>
+<g mask="url(#notblob)">
+<circle cx="600" cy="232" r="{{bloomR}}" fill="none" stroke="#8a6a44" style="stroke-width: 8" opacity=".14" filter="url(#bleed)" class="rim"></circle>
+<circle cx="600" cy="232" r="{{bloomR}}" fill="none" stroke="#3a2a1c" style="stroke-width: 2.4" opacity=".3" filter="url(#brush)" class="rim"></circle>
+</g>
+
+<g transform="translate(880 530)" opacity=".8">
+<circle r="28" class="ink"></circle>
+<circle r="22" class="ink" style="stroke-width: .8"></circle>
+<path d="M0 -26L5 0L0 26L-5 0z" fill="#3a2a1c"></path>
+<path d="M-26 0L0 -5L26 0L0 5z" fill="#3a2a1c" opacity=".55"></path>
+<text x="0" y="-33" text-anchor="middle" class="label-sm">С</text>
+</g>
+<rect width="960" height="600" filter="url(#grain)" opacity=".13" class="grain"></rect>
+</svg>
+
+<div style="position: absolute; left: 0; top: 0; width: 960px; height: 600px; pointer-events: none; box-shadow: inset 0 0 90px rgba(80,44,23,.28)"></div>
+
+<div style="position: absolute; left: 600px; top: 232px; width: 0; height: 0">
+<span style="position: absolute; left: -30px; top: -30px; width: 60px; height: 60px; border: 1px solid rgba(99,50,24,.85); border-radius: 50%; box-shadow: 0 0 0 6px rgba(217,150,75,.16), 0 0 28px rgba(88,42,23,.5)"></span>
+<span style="position: absolute; left: -11px; top: -11px; width: 22px; height: 22px; border-radius: 50%; background: #682d1c; border: 3px solid #e7be80; box-shadow: 0 2px 8px rgba(38,50,37,.6)"></span>
+</div>
+
+<sc-if value="{{annotations}}" hint-placeholder-val="{{true}}">
+<div class="chip" style="left: 24px; top: 24px"><b>1</b><span>Неизведанное · пергамент и зерно, тайлы OSM скрыты</span></div>
+<div class="chip" style="left: 330px; top: 470px"><b>2</b><span>Край · рваная кисть 26 px + чернильная кайма 3 px</span></div>
+<div class="chip" style="left: 540px; top: 322px"><b>3</b><span>Проявление · 320 / 700 мс · ease-out cubic</span></div>
+<div class="chip" style="left: 690px; top: 118px"><b>4</b><span>Подпись дописывается · 400 → 900 мс</span></div>
+</sc-if>
+
+<div style="position: absolute; right: 24px; top: 24px; padding: 10px 14px; background: rgba(15,23,34,.88); color: #edf3ec; border: 1px solid rgba(245,168,102,.5); font: 11px 'JetBrains Mono', monospace; min-width: 160px">
+<div style="display: flex; justify-content: space-between; gap: 16px"><span>ОТКРЫТО</span><span style="color: #f5a866">23 %</span></div>
+<div style="height: 3px; background: #293735; margin-top: 8px"><div style="width: 23%; height: 100%; background: #f5a866"></div></div>
+</div>
+<div style="position: absolute; right: 8px; bottom: 6px; padding: 3px 7px; background: rgba(231,214,177,.85); color: #5a4630; font: 10px 'JetBrains Mono', monospace">© OpenStreetMap contributors</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"brushScale":{"editor":"range","default":26,"min":0,"max":60,"step":1,"unit":"px","section":"Край"},"edgeBlur":{"editor":"range","default":1.6,"min":0,"max":6,"step":0.2,"unit":"px","section":"Край"},"rimOpacity":{"editor":"range","default":0.55,"min":0,"max":1,"step":0.05,"section":"Край"},"annotations":{"editor":"boolean","default":true,"section":"Пометки"},"basemap":{"editor":"enum","default":"Перерисованная","options":["Перерисованная","Тайлы OSM"],"section":"Подложка"},"$preview":{"width":960,"height":600}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const bloomR = 74;
+    const redrawn = (p.basemap ?? 'Перерисованная') !== 'Тайлы OSM';
+    return {
+      mapHref: redrawn ? '/_blob/8e167b3e8c00ad98529fa10bdab8c3ea' : '/_blob/dbece858813dea5d3bae382438ccd4c3',
+      mapFilter: redrawn ? 'none' : 'saturate(.35) sepia(.82) contrast(1.12) brightness(1.08)',
+      tint: redrawn ? 0 : 0.22,
+      brushScale: p.brushScale ?? 26,
+      edgeBlur: p.edgeBlur ?? 1.6,
+      rimOpacity: p.rimOpacity ?? 0.55,
+      annotations: p.annotations ?? true,
+      bloomR,
+      bloomCut: bloomR - 4,
+      labelW: 58,
+      blob: 'M150 383C190 360 225 335 262 316C300 292 345 262 382 246C410 232 440 224 472 214C505 200 530 170 562 166C610 160 646 205 646 252C646 300 605 336 560 336C525 338 500 365 470 386C440 405 410 410 380 418C345 430 300 465 262 486C230 505 200 548 150 556C100 560 64 520 64 470C64 420 105 390 150 383Z'
+    };
+  }
+}
+</script>
+</body>
+</html>

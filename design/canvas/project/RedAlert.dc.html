@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Command &amp; Conquer: Red Alert · пелена отрастает</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0;background:#0f1722}
+.chip{position:absolute;display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(15,23,34,.9);color:#edf3ec;font:11px/1.3 'JetBrains Mono',monospace;letter-spacing:.01em;border:1px solid rgba(245,168,102,.55);white-space:nowrap}
+.chip b{display:grid;place-items:center;flex:0 0 18px;width:18px;height:18px;border-radius:50%;background:#f5a866;color:#2a1a0e;font-size:11px;font-weight:500}
+</style>
+</helmet>
+<div style="position: relative; width: 960px; height: 608px; overflow: hidden; background: #000">
+<svg width="960" height="608" style="position: absolute; left: 0; top: 0; display: block">
+<defs>
+<filter id="shadowBlur" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="2"></feGaussianBlur></filter>
+<filter id="shroudEdge" x="-5%" y="-5%" width="110%" height="110%">
+<feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="2" seed="5" result="noise"></feTurbulence>
+<feDisplacementMap in="SourceGraphic" in2="noise" scale="12" xChannelSelector="R" yChannelSelector="G" result="torn"></feDisplacementMap>
+<feGaussianBlur in="torn" stdDeviation="3"></feGaussianBlur>
+</filter>
+</defs>
+
+<image href="{{mapHref}}" x="0" y="0" width="960" height="608" style="filter: {{mapFilter}}"></image>
+
+<g transform="translate(80 464)">
+<ellipse cx="16" cy="29" rx="17" ry="4" fill="rgba(0,0,0,.3)" filter="url(#shadowBlur)"></ellipse>
+<path d="M3 28L16 6l13 22z" fill="#d6c07a"></path>
+<path d="M16 6l13 22H16z" fill="#b89c56"></path>
+<path d="M12 28l4-11 4 11z" fill="#3a2a1c"></path>
+</g>
+<g transform="translate(544 100)">
+<ellipse cx="20" cy="62" rx="22" ry="5" fill="rgba(0,0,0,.3)" filter="url(#shadowBlur)"></ellipse>
+<path d="M8 60V20h4v-6h5v6h6v-6h5v6h4v40z" fill="#8f8f93"></path>
+<path d="M20 20h8v40h-8z" fill="#6f6f76"></path>
+<path d="M8 60h24v4H8z" fill="#55555a"></path>
+<path d="M17 60V46c0-3 1.5-4 3-4s3 1 3 4v14z" fill="#2b2b30"></path>
+</g>
+
+<path d="{{age1}}" fill="#000" opacity="{{o1}}" filter="url(#shroudEdge)"></path>
+<path d="{{age2}}" fill="#000" opacity="{{o2}}" filter="url(#shroudEdge)"></path>
+<path d="{{age3}}" fill="#000" opacity="{{o3}}" filter="url(#shroudEdge)"></path>
+<path d="{{black}}" fill="#000" filter="url(#shroudEdge)"></path>
+
+<g transform="translate(496 240)">
+<ellipse cx="2" cy="16" rx="17" ry="5" fill="rgba(0,0,0,.35)" filter="url(#shadowBlur)"></ellipse>
+<path d="M-11 -3c-3-3-6-3-8-1" stroke="#3a2a1c" fill="none" style="stroke-width: 2.4; stroke-linecap: round"></path>
+<path d="M-15 2c0-6 5-9 12-9h10c5 0 8 2 10 5l4 3-2 4h-5l-1 8h-4l-1-8h-8l-1 8h-4l-1-8c-5 0-9-3-9-5z" fill="#7a4a22"></path>
+<path d="M8 -8l9-7c2 2 2 6 0 8l-6 3z" fill="#7a4a22"></path>
+<path d="M-3 -7c0-6 2-9 5-9s5 3 5 9v5h-10z" fill="#b8302a"></path>
+<circle cx="2" cy="-17" r="4.2" fill="#e8c39e"></circle>
+<path d="M-10 -30v32" stroke="#3a2a1c" style="stroke-width: 1.6; stroke-linecap: round"></path>
+<path d="M-10 -30c5 1 10 0 15 3c-4 2-10 3-15 6z" fill="#b8302a"></path>
+</g>
+</svg>
+
+<sc-if value="{{annotations}}" hint-placeholder-val="{{true}}">
+<div class="chip" style="left: 24px; top: 24px"><b>1</b><span>Shroud Regrows · опция Red Alert: пелена возвращается на забытые клетки</span></div>
+<div class="chip" style="left: 24px; top: 556px"><b>2</b><span>3 хода без обзора · пелена {{p3}} %, ещё ход и клетка снова чёрная</span></div>
+<div class="chip" style="left: 236px; top: 292px"><b>3</b><span>Обзор · R = 5 клеток, свежие клетки чистые</span></div>
+<div class="chip" style="left: 300px; top: 420px"><b>4</b><span>1 ход назад · {{p1}} %, 2 хода · {{p2}} %, шаг {{regrow}} с</span></div>
+</sc-if>
+
+<div style="position: absolute; right: 24px; top: 24px; padding: 10px 14px; background: rgba(15,23,34,.9); color: #edf3ec; border: 1px solid rgba(245,168,102,.55); font: 11px 'JetBrains Mono', monospace; min-width: 160px">
+<div style="display: flex; justify-content: space-between; gap: 16px"><span>ОТКРЫТО СЕЙЧАС</span><span style="color: #f5a866">14 %</span></div>
+<div style="height: 3px; background: #293735; margin-top: 8px"><div style="width: 14%; height: 100%; background: #f5a866"></div></div>
+</div>
+<div style="position: absolute; right: 8px; bottom: 6px; padding: 3px 7px; background: rgba(15,23,34,.85); color: #9aa99f; font: 10px 'JetBrains Mono', monospace">© OpenStreetMap contributors</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"regrow":{"editor":"range","default":60,"min":20,"max":180,"step":10,"unit":"с","section":"Пелена"},"radius":{"editor":"range","default":5.5,"min":3,"max":8,"step":0.5,"unit":"кл","section":"Обзор"},"annotations":{"editor":"boolean","default":true,"section":"Пометки"},"basemap":{"editor":"enum","default":"Перерисованная","options":["Перерисованная","Тайлы OSM"],"section":"Подложка"},"$preview":{"width":960,"height":608}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const T = 32;
+    const COLS = 30;
+    const ROWS = 19;
+    const p = this.props;
+    const R = p.radius ?? 5.5;
+    const redrawn = (p.basemap ?? 'Перерисованная') !== 'Тайлы OSM';
+    const centers = [[4, 15], [8, 12], [12, 9], [15, 7]];
+    const dist = (c, r, cx, cy) => Math.hypot(c - cx, r - cy);
+    const ages = ['', '', '', ''];
+    let black = '';
+    for (let r = -1; r <= ROWS; r += 1) {
+      for (let c = -1; c <= COLS; c += 1) {
+        const cell = `M${c * T} ${r * T}h${T}v${T}h-${T}z`;
+        const inside = r >= 0 && r < ROWS && c >= 0 && c < COLS;
+        if (!inside) { black += cell; continue; }
+        const cx = c + 0.5; const cy = r + 0.5;
+        let age = -1;
+        for (let i = centers.length - 1; i >= 0; i -= 1) {
+          if (dist(cx, cy, centers[i][0] + 0.5, centers[i][1] + 0.5) <= R) { age = centers.length - 1 - i; break; }
+        }
+        if (age < 0) black += cell;
+        else if (age > 0) ages[age] += cell;
+      }
+    }
+    return {
+      age1: ages[1], age2: ages[2], age3: ages[3], black,
+      o1: 0.3, o2: 0.6, o3: 0.85,
+      p1: 30, p2: 60, p3: 85,
+      regrow: p.regrow ?? 60,
+      mapHref: redrawn ? '/_blob/8f335fb238af2166c3de8db3d61e637a' : '/_blob/dbece858813dea5d3bae382438ccd4c3',
+      mapFilter: redrawn ? 'none' : 'saturate(1.28) sepia(.18) contrast(1.18)',
+      annotations: p.annotations ?? true
+    };
+  }
+}
+</script>
+</body>
+</html>

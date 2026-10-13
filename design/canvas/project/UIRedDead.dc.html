@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Страница · Red Dead</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oranienbaum&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap">
+<style>
+body{margin:0;background:#120d0a;color:#efe2c4;font-family:'Cormorant Garamond',serif}
+a{color:#efe2c4}a:hover{color:#d9b36a}
+.cap{font-family:Oranienbaum,serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase}
+.panel{background:linear-gradient(180deg,#1f1611,#17100c);border:1px solid #3d2b1d;outline:1px dashed rgba(217,179,106,.3);outline-offset:-6px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:46px;padding:0 18px;background:transparent;border:1px solid rgba(217,179,106,.55);color:#efe2c4;font-family:Oranienbaum,serif;font-size:12px;letter-spacing:.16em;text-transform:uppercase;cursor:pointer}
+.btn:hover{border-color:#d9b36a;color:#d9b36a}
+.btn-primary{background:#b83a24;border-color:#b83a24;color:#f7e9cc}
+.btn-primary:hover{background:#c8432b;border-color:#c8432b;color:#fff5de}
+.tab{min-height:44px;padding:0 14px;background:transparent;border:0;border-bottom:2px solid transparent;color:#b39b78;font-family:Oranienbaum,serif;font-size:12px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer}
+.tab:hover{color:#efe2c4}
+.tab.active{color:#efe2c4;border-bottom-color:#c8432b}
+.icon-btn{width:44px;height:44px;display:grid;place-items:center;background:transparent;border:1px solid rgba(217,179,106,.45);color:#efe2c4;font-family:Oranienbaum,serif;font-size:22px;line-height:1;cursor:pointer}
+.icon-btn:hover{border-color:#d9b36a;color:#d9b36a}
+.row{display:flex;align-items:center;gap:12px;min-height:44px}
+.row .ico{display:grid;place-items:center;width:36px;height:36px;border:1px solid #4a3627;border-radius:50%;color:#d9b36a;flex:0 0 36px;font-family:Oranienbaum,serif;font-size:16px}
+.row.unknown .ico{color:#7d6a52;border-style:dashed}
+.row b{display:block;font-family:Oranienbaum,serif;font-weight:400;font-size:16px;letter-spacing:.02em}
+.row small{display:block;font-size:13px;font-style:italic;color:#b39b78}
+.row.unknown b{color:#9c876a}
+.row .st{margin-left:auto;color:#d9b36a;font-family:Oranienbaum,serif;font-size:15px}
+.row.unknown .st{color:#6b5a46}
+.sep{border-bottom:1px solid #3d2b1d}
+kbd{display:inline-block;min-width:18px;padding:1px 5px;margin-left:4px;border:1px solid #6b5a46;border-radius:2px;font-family:Oranienbaum,serif;font-size:11px;color:#efe2c4;text-align:center}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: radial-gradient(ellipse at 18% 0%, rgba(120,52,30,.28), transparent 42%), radial-gradient(ellipse at 85% 10%, rgba(80,40,24,.22), transparent 36%), #120d0a">
+<div style="max-width: 1272px; margin: 0 auto; padding: 28px 24px 24px; display: flex; flex-direction: column">
+
+<header style="display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; padding-bottom: 20px; border-bottom: 1px solid #3d2b1d">
+<a href="#" aria-label="Terra Incognita" style="display: flex; align-items: center; gap: 10px; text-decoration: none; font-family: Oranienbaum, serif; font-size: 19px; letter-spacing: .14em; text-transform: uppercase">
+<svg width="22" height="22" fill="none" stroke="#c8432b" style="stroke-width: 1.6; stroke-linejoin: round"><path d="M11 1.5l2.4 6.4L20 11l-6.6 3.1L11 20.5l-2.4-6.4L2 11l6.6-3.1z"></path></svg>
+<span>Terra <span style="color: #b39b78">Incognita</span></span>
+</a>
+<div class="cap" style="display: flex; align-items: center; gap: 12px; color: #b39b78">
+<span style="width: 8px; height: 8px; border-radius: 50%; background: #c8432b; box-shadow: 0 0 10px #c8432b"></span>
+<span>Экспедиция активна</span>
+<span style="height: 14px; border-left: 1px solid #3d2b1d"></span>
+<span>06:42</span>
+</div>
+</header>
+
+<nav aria-label="Стиль карты" style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap; padding-top: 8px; border-bottom: 1px solid #3d2b1d">
+<span class="cap" style="margin-right: auto; color: #b39b78">Стиль экспедиции</span>
+<button class="tab" type="button">Terra Incognita</button>
+<button class="tab" type="button">Heroes III</button>
+<button class="tab active" type="button">Red Dead</button>
+</nav>
+
+<section style="max-width: 640px; margin: 56px 0 44px">
+<p class="cap" style="margin: 0; color: #d9b36a">Журнал экспедиции · день 01</p>
+<h1 style="margin: 14px 0 18px; font-family: Oranienbaum, serif; font-weight: 400; font-size: 64px; line-height: 1.02; letter-spacing: -.01em">Откройте мир<br><span style="color: #b39b78">своими шагами.</span></h1>
+<p style="max-width: 470px; margin: 0; font-size: 19px; line-height: 1.55; color: #cdb996">За туманом скрывается неизвестное. Исследуйте каждый уголок карты — новые места проявятся, когда вы окажетесь рядом.</p>
+</section>
+
+<section aria-label="Карта экспедиции" style="display: flex; flex-wrap: wrap; gap: 22px; align-items: stretch">
+<div class="panel" style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+<div style="height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 22px; border-bottom: 1px solid #3d2b1d">
+<div><span class="cap" style="display: block; color: #d9b36a">Сектор 01</span><span style="display: block; margin-top: 4px; font-family: Oranienbaum, serif; font-size: 16px">Долина первых следов · радиус 30 м</span></div>
+<div style="display: flex; align-items: center; gap: 10px" aria-label="Управление масштабом">
+<button class="icon-btn" type="button" aria-label="Уменьшить масштаб">−</button>
+<span class="cap" style="color: #b39b78; min-width: 44px; text-align: center">100 %</span>
+<button class="icon-btn" type="button" aria-label="Увеличить масштаб">+</button>
+</div>
+</div>
+<div style="position: relative; height: 600px; overflow: hidden; background: #e7d6b1">
+<dc-import name="Main" annotations="{{off}}" hint-size="960px,600px"></dc-import>
+<div style="position: absolute; left: 16px; bottom: 16px; padding: 9px 12px; background: rgba(18,13,10,.82); color: #efe2c4; font-family: Oranienbaum, serif; font-size: 12px; letter-spacing: .06em; border: 1px solid rgba(217,179,106,.35)">Перемещайтесь по карте или используйте <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></div>
+</div>
+</div>
+
+<aside class="panel" style="flex: 1 1 290px; max-width: 100%; padding: 26px 22px; display: flex; flex-direction: column; gap: 22px">
+<div class="sep" style="display: flex; flex-direction: column; gap: 12px; padding-bottom: 22px">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span class="cap" style="color: #b39b78">Открытая территория</span><strong style="font-family: Oranienbaum, serif; font-weight: 400; font-size: 22px; color: #d9b36a">23 %</strong></div>
+<div style="height: 4px; background: #2b1f17"><div style="width: 23%; height: 100%; background: linear-gradient(90deg, #b83a24, #d9b36a)"></div></div>
+<p style="margin: 0; font-size: 15px; font-style: italic; color: #b39b78">Следы ведут всё дальше</p>
+</div>
+<div class="sep" style="padding-bottom: 22px">
+<span class="cap" style="color: #d9b36a">Текущая позиция</span>
+<strong style="display: block; margin-top: 8px; font-family: Oranienbaum, serif; font-weight: 400; font-size: 16px; letter-spacing: .06em">48.857° N &nbsp; 2.352° E</strong>
+</div>
+<div class="sep" style="display: flex; flex-direction: column; gap: 12px; padding-bottom: 22px">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span class="cap" style="color: #b39b78">Найдено объектов</span><strong style="font-family: Oranienbaum, serif; font-weight: 400; font-size: 22px; color: #d9b36a">2 / 3</strong></div>
+<div class="row"><span class="ico"><svg width="18" height="18" fill="none" stroke="currentColor" style="stroke-width: 1.5; stroke-linejoin: round"><path d="M2 15L9 3l7 12zM9 3v12"></path></svg></span><span><b>Базовый лагерь</b><small>Отправная точка</small></span><span class="st">✓</span></div>
+<div class="row"><span class="ico"><svg width="18" height="18" fill="none" stroke="currentColor" style="stroke-width: 1.5; stroke-linecap: round"><path d="M1 13h16M3 13V9a6 6 0 0 1 12 0v4M6 13v-3M12 13v-3"></path></svg></span><span><b>Тихая переправа</b><small>Обнаружено только что</small></span><span class="st">✓</span></div>
+<div class="row unknown"><span class="ico">?</span><span><b>Старая башня</b><small>Расстояние: 86 м</small></span><span class="st">·</span></div>
+</div>
+<button class="btn btn-primary" type="button"><svg width="18" height="18" fill="none" stroke="currentColor" style="stroke-width: 1.5; stroke-linejoin: round"><circle cx="9" cy="9" r="7.5"></circle><path d="M12.5 5.5l-2.5 5-5 2.5 2.5-5z"></path></svg>Вернуться к лагерю</button>
+</aside>
+</section>
+
+<footer class="cap" style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 22px 2px 0; color: #b39b78"><span>Сохраняйте любопытство.</span><span>Последнее сохранение: только что</span></footer>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1320,"height":1240}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { off: false };
+  }
+}
+</script>
+</body>
+</html>

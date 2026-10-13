@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Heroes III · пелена</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0;background:#0f1722}
+.chip{position:absolute;display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(16,13,29,.9);color:#fff3c9;font:11px/1.3 'JetBrains Mono',monospace;letter-spacing:.01em;border:1px solid rgba(229,184,79,.6);white-space:nowrap}
+.chip b{display:grid;place-items:center;flex:0 0 18px;width:18px;height:18px;border-radius:3px;background:#e5b84f;color:#2a1a0e;font-size:11px;font-weight:500}
+</style>
+</helmet>
+<div style="position: relative; width: 960px; height: 608px; overflow: hidden; background: #000">
+<svg width="960" height="608" style="position: absolute; left: 0; top: 0; display: block">
+<defs>
+<filter id="shadowBlur" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="2"></feGaussianBlur></filter>
+<filter id="shroudEdge" x="-5%" y="-5%" width="110%" height="110%">
+<feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="2" seed="5" result="noise"></feTurbulence>
+<feDisplacementMap in="SourceGraphic" in2="noise" scale="{{edgeTear}}" xChannelSelector="R" yChannelSelector="G" result="torn"></feDisplacementMap>
+<feGaussianBlur in="torn" stdDeviation="{{edgeBlur}}"></feGaussianBlur>
+</filter>
+<filter id="fogSoft" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="5"></feGaussianBlur></filter>
+</defs>
+
+<image href="{{mapHref}}" x="0" y="0" width="960" height="608" style="filter: {{mapFilter}}"></image>
+
+<g transform="translate(80 464)">
+<ellipse cx="16" cy="29" rx="17" ry="4" fill="rgba(0,0,0,.3)" filter="url(#shadowBlur)"></ellipse>
+<path d="M3 28L16 6l13 22z" fill="#d6c07a"></path>
+<path d="M16 6l13 22H16z" fill="#b89c56"></path>
+<path d="M12 28l4-11 4 11z" fill="#3a2a1c"></path>
+<path d="M3 28L16 6l13 22" stroke="#5a4630" fill="none" style="stroke-width: 1.2; stroke-linejoin: round"></path>
+</g>
+<g transform="translate(544 100)">
+<ellipse cx="20" cy="62" rx="22" ry="5" fill="rgba(0,0,0,.3)" filter="url(#shadowBlur)"></ellipse>
+<path d="M8 60V20h4v-6h5v6h6v-6h5v6h4v40z" fill="#8f8f93"></path>
+<path d="M20 20h8v40h-8z" fill="#6f6f76"></path>
+<path d="M8 60h24v4H8z" fill="#55555a"></path>
+<path d="M17 60V46c0-3 1.5-4 3-4s3 1 3 4v14z" fill="#2b2b30"></path>
+<path d="M12 26h4v6h-4zM24 26h4v6h-4zM12 38h4v6h-4zM24 38h4v6h-4z" fill="#3a3a40"></path>
+</g>
+<g transform="translate(640 316)">
+<ellipse cx="18" cy="35" rx="20" ry="4" fill="rgba(0,0,0,.3)" filter="url(#shadowBlur)"></ellipse>
+<path d="M2 34c0-16 9-28 16-28s16 12 16 28z" fill="#8b6b3e"></path>
+<path d="M18 6c7 0 16 12 16 28H18z" fill="#6f5330"></path>
+<path d="M10 34c0-8 4-13 8-13s8 5 8 13z" fill="#241a10"></path>
+<path d="M28 8v14" stroke="#3a2a1c" style="stroke-width: 1.5"></path>
+<path d="M28 8c3 1 6 0 9 2c-3 2-6 2-9 4z" fill="#c0392b"></path>
+</g>
+
+<path d="{{fog}}" fill="#10141f" opacity="{{fogOpacity}}" filter="url(#fogSoft)"></path>
+<path d="{{black}}" fill="#000" filter="url(#shroudEdge)"></path>
+
+<g transform="translate(496 240)">
+<ellipse cx="2" cy="16" rx="17" ry="5" fill="rgba(0,0,0,.35)" filter="url(#shadowBlur)"></ellipse>
+<path d="M-11 -3c-3-3-6-3-8-1" stroke="#3a2a1c" fill="none" style="stroke-width: 2.4; stroke-linecap: round"></path>
+<path d="M-15 2c0-6 5-9 12-9h10c5 0 8 2 10 5l4 3-2 4h-5l-1 8h-4l-1-8h-8l-1 8h-4l-1-8c-5 0-9-3-9-5z" fill="#7a4a22"></path>
+<path d="M-15 2c0-6 5-9 12-9h10c5 0 8 2 10 5l4 3-2 4h-5" stroke="#4a2e16" fill="none" style="stroke-width: 1"></path>
+<path d="M8 -8l9-7c2 2 2 6 0 8l-6 3z" fill="#7a4a22"></path>
+<path d="M-3 -7c0-6 2-9 5-9s5 3 5 9v5h-10z" fill="#5b3f8e"></path>
+<path d="M-3 -4h10v3h-10z" fill="#3a2560"></path>
+<circle cx="2" cy="-17" r="4.2" fill="#e8c39e"></circle>
+<path d="M-2.5 -19c0-3.5 2-5 4.5-5s4.5 1.5 4.5 5z" fill="#c9a043"></path>
+<path d="M-10 -30v32" stroke="#3a2a1c" style="stroke-width: 1.6; stroke-linecap: round"></path>
+<path d="M-10 -30c5 1 10 0 15 3c-4 2-10 3-15 6z" fill="#e5b84f"></path>
+</g>
+</svg>
+
+<sc-if value="{{annotations}}" hint-placeholder-val="{{true}}">
+<div class="chip" style="left: 24px; top: 24px"><b>1</b><span>Пелена · чёрная, кромка рваная и полупрозрачная, как в Heroes III</span></div>
+<div class="chip" style="left: 24px; top: 556px"><b>2</b><span>Туман · разведано, но вне обзора: приглушено, как в Heroes IV</span></div>
+<div class="chip" style="left: 236px; top: 292px"><b>3</b><span>Обзор · R = 5 клеток вокруг героя, полная яркость</span></div>
+<div class="chip" style="left: 596px; top: 368px"><b>4</b><span>Шахта в кромке · объект виден наполовину</span></div>
+</sc-if>
+
+<div style="position: absolute; right: 24px; top: 24px; padding: 10px 14px; background: rgba(16,13,29,.9); color: #fff3c9; border: 1px solid rgba(229,184,79,.6); font: 11px 'JetBrains Mono', monospace; min-width: 160px">
+<div style="display: flex; justify-content: space-between; gap: 16px"><span>РАЗВЕДАНО</span><span style="color: #e5b84f">31 %</span></div>
+<div style="height: 3px; background: #2a2340; margin-top: 8px"><div style="width: 31%; height: 100%; background: #e5b84f"></div></div>
+</div>
+<div style="position: absolute; right: 8px; bottom: 6px; padding: 3px 7px; background: rgba(16,13,29,.85); color: #c5b58b; font: 10px 'JetBrains Mono', monospace">© OpenStreetMap contributors</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"radius":{"editor":"range","default":5.5,"min":3,"max":8,"step":0.5,"unit":"кл","section":"Обзор"},"fogOfWar":{"editor":"boolean","default":true,"section":"Обзор"},"edgeTear":{"editor":"range","default":16,"min":0,"max":30,"step":1,"unit":"px","section":"Кромка"},"edgeBlur":{"editor":"range","default":4,"min":0,"max":10,"step":0.5,"unit":"px","section":"Кромка"},"annotations":{"editor":"boolean","default":true,"section":"Пометки"},"basemap":{"editor":"enum","default":"Перерисованная","options":["Перерисованная","Тайлы OSM"],"section":"Подложка"},"$preview":{"width":960,"height":608}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const T = 32;
+    const COLS = 30;
+    const ROWS = 19;
+    const p = this.props;
+    const R = p.radius ?? 5.5;
+    const fogOfWar = p.fogOfWar ?? true;
+    const centers = [[4, 15], [8, 12], [12, 9], [15, 7]];
+    const dist = (c, r, cx, cy) => Math.hypot(c - cx, r - cy);
+    let fog = '';
+    let black = '';
+    for (let r = -1; r <= ROWS; r += 1) {
+      for (let c = -1; c <= COLS; c += 1) {
+        const cell = `M${c * T} ${r * T}h${T}v${T}h-${T}z`;
+        const inside = r >= 0 && r < ROWS && c >= 0 && c < COLS;
+        if (!inside) { black += cell; continue; }
+        const cx = c + 0.5; const cy = r + 0.5;
+        let dPrev = 99;
+        for (let i = 0; i < centers.length - 1; i += 1) dPrev = Math.min(dPrev, dist(cx, cy, centers[i][0] + 0.5, centers[i][1] + 0.5));
+        const last = centers[centers.length - 1];
+        const dCur = dist(cx, cy, last[0] + 0.5, last[1] + 0.5);
+        if (dCur <= R) {
+          // в обзоре героя
+        } else if (dPrev <= R) {
+          if (fogOfWar) fog += cell;
+        } else {
+          black += cell;
+        }
+      }
+    }
+    const redrawn = (p.basemap ?? 'Перерисованная') !== 'Тайлы OSM';
+    return {
+      mapHref: redrawn ? '/_blob/8f335fb238af2166c3de8db3d61e637a' : '/_blob/dbece858813dea5d3bae382438ccd4c3',
+      mapFilter: redrawn ? 'none' : 'saturate(1.28) sepia(.18) contrast(1.18)',
+      fog, black,
+      fogOpacity: fogOfWar ? 0.55 : 0,
+      edgeTear: p.edgeTear ?? 16,
+      edgeBlur: p.edgeBlur ?? 4,
+      annotations: p.annotations ?? true
+    };
+  }
+}
+</script>
+</body>
+</html>
