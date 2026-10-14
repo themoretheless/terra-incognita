@@ -1,0 +1,46 @@
+# Архитектура
+
+Статическое приложение без сборки: ES-модули из `src/`, Leaflet подключается
+UMD-скриптом с SRI, MapLibre и h3-js подгружаются по требованию.
+
+```
+index.html ── src/main.js (оркестратор, window.terra)
+               ├─ fog-store.js        хранилище открытого (источник правды)
+               │   ├─ db.js           IndexedDB: схема, миграции, ошибки
+               │   └─ codec.js        RLE, base64, fnv1a, popcount
+               ├─ tracks.js           треки по дням, GPX/KML/GeoJSON
+               ├─ markers.js          флажки и фото-заметки, DOM-маркеры
+               ├─ gps.js              watchPosition, фильтры, Wake Lock
+               ├─ game.js             опыт, достижения, квесты, покрытие
+               ├─ osm.js              Overpass: места, границы, улицы (кэш 7 дней)
+               ├─ map/leaflet-view.js растровая подложка
+               ├─ map/maplibre-view.js векторная подложка + vector-styles.js
+               ├─ render/fog-renderer.js пелена, режимы, overlay, compose
+               │   └─ render/raster-worker.js битовая карта → ImageBitmap
+               └─ ui/                 panels, dialog, toast, minimap
+```
+
+## Поток данных
+
+1. Позиция (GPS или клавиши) → `main.movePlayer` → `fog.reveal` / `revealPath`.
+2. `FogStore` помечает клетки, обновляет индекс и агрегаты, планирует запись
+   и шлёт событие `reveal`.
+3. `FogRenderer.requestDraw()` ставит один кадр в rAF. Кадр берёт
+   `chunksInBounds(view)`, для каждого чанка — маску уровня детализации
+   (32–256 px по экранному размеру), из кэша или из воркера.
+4. Панели читают `app.fog`, `app.game`, `app.tracks` — своего состояния не держат.
+
+## Подложка
+
+Обе реализации (`LeafletView`, `MapLibreView`) дают один интерфейс:
+`project`, `getBounds`, `getZoom`, `setView`, `metersToPixels`, `drawBasemap`,
+события `move`/`zoom`/`click`. Векторная включается в настройках; при ошибке
+загрузки остаётся растровая.
+
+## Отклонения от плана
+
+- Мягкий край — билинейное покрытие уменьшенных масок, а не настоящее поле расстояний.
+- Red Alert «отрастает» по чанку целиком: время посещения хранится на чанк.
+- GeoJSON-контуры трассируются по чанкам, соседние чанки не сливаются.
+- Воркер растеризует маски; компоновка кадра — в основном потоке.
+- Импорт H3 растрирует ячейки и потому неточен на краях.
