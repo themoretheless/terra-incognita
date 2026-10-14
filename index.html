@@ -1,101 +1,139 @@
 <!doctype html>
-<html lang="ru">
+<html lang="ru" data-theme="terra" data-ui="classic">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://tiles.openfreemap.org; connect-src 'self' https: ; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"
+    />
     <meta name="theme-color" content="#0b1320" />
+    <meta name="description" content="Карта путешественника с туманом войны: открытые места сохраняются навсегда." />
     <title>Terra Incognita — карта путешественника</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icons/icon-192.png" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H"
+      crossorigin="anonymous"
+    />
     <link rel="stylesheet" href="styles.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   </head>
   <body>
+    <a class="skip-link" href="#map-viewport">К карте</a>
     <main class="app-shell">
       <header class="topbar">
         <a class="brand" href="#" aria-label="Terra Incognita">
-          <span class="brand-mark">✦</span>
+          <span class="brand-mark" aria-hidden="true">✦</span>
           <span>terra <em>incognita</em></span>
         </a>
+        <nav class="menu" aria-label="Меню">
+          <button class="menu-button" type="button" data-panel="stats" data-i18n="menu.stats">Статистика</button>
+          <button class="menu-button" type="button" data-panel="journal" data-i18n="menu.journal">Журнал</button>
+          <button class="menu-button" type="button" data-panel="timeline" data-i18n="menu.timeline">Хроника</button>
+          <button class="menu-button" type="button" data-panel="data" data-i18n="menu.data">Данные</button>
+          <button class="menu-button" type="button" data-panel="share" data-i18n="menu.share">Поделиться</button>
+          <button class="menu-button" type="button" data-panel="settings" data-i18n="menu.settings">Настройки</button>
+          <button class="menu-button icon-only" type="button" data-panel="help" data-i18n-attr="aria-label:menu.help" aria-label="Клавиши">?</button>
+        </nav>
         <div class="topbar-meta">
-          <span class="status-dot"></span>
-          <span>Экспедиция активна</span>
-          <span class="divider"></span>
+          <span class="status-dot" id="status-dot" aria-hidden="true"></span>
+          <span id="status-text" data-i18n="status.active">Экспедиция активна</span>
+          <span class="divider" aria-hidden="true"></span>
           <span id="clock">06:42</span>
         </div>
       </header>
 
       <nav class="theme-switcher" aria-label="Стиль карты">
-        <span class="theme-label">Стиль экспедиции</span>
-        <button class="theme-button active" data-theme="terra" type="button">Terra Incognita</button>
-        <button class="theme-button" data-theme="heroes" type="button">Heroes III</button>
-        <button class="theme-button" data-theme="western" type="button">Red Dead</button>
+        <span class="theme-label" data-i18n="theme.label">Стиль экспедиции</span>
+        <button class="theme-button" data-theme="terra" type="button" aria-pressed="true">Terra Incognita</button>
+        <button class="theme-button" data-theme="heroes" type="button" aria-pressed="false">Heroes III</button>
+        <button class="theme-button" data-theme="western" type="button" aria-pressed="false">Red Dead</button>
       </nav>
 
       <section class="intro">
-        <p class="eyebrow">Журнал экспедиции · день 01</p>
-        <h1>Откройте мир<br /><span>своими шагами.</span></h1>
-        <p class="intro-copy">
-          За туманом скрывается неизвестное. Исследуйте каждый уголок карты —
-          новые места проявятся, когда вы окажетесь рядом.
+        <p class="eyebrow" id="intro-eyebrow">Журнал экспедиции · день 01</p>
+        <h1><span data-i18n="intro.title1">Откройте мир</span><br /><span class="dim" data-i18n="intro.title2">своими шагами.</span></h1>
+        <p class="intro-copy" data-i18n="intro.copy">
+          За туманом скрывается неизвестное. Исследуйте каждый уголок карты — новые места проявятся, когда вы окажетесь рядом.
         </p>
       </section>
 
       <section class="map-layout" aria-label="Карта экспедиции">
         <div class="map-card">
           <div class="map-toolbar">
-            <div>
-              <span class="map-label">Сектор 01</span>
-              <span class="map-name">Долина первых следов · радиус 30 м</span>
+            <div class="map-title">
+              <span class="map-label" id="map-label">Сектор 01</span>
+              <span class="map-name" id="map-name">Долина первых следов · радиус 30 м</span>
             </div>
-            <div class="map-controls" aria-label="Управление масштабом">
-              <button id="zoom-out" class="icon-button" type="button" aria-label="Уменьшить масштаб">−</button>
-              <span id="zoom-level">100%</span>
-              <button id="zoom-in" class="icon-button" type="button" aria-label="Увеличить масштаб">+</button>
+            <div class="map-controls">
+              <button id="gps-toggle" class="chip-button" type="button" aria-pressed="false">GPS</button>
+              <button id="center-me" class="icon-button" type="button" data-i18n-attr="aria-label:center;title:center" aria-label="Ко мне">⌖</button>
+              <button id="zoom-out" class="icon-button" type="button" data-i18n-attr="aria-label:map.zoomOut" aria-label="Уменьшить масштаб">−</button>
+              <span id="zoom-level" aria-live="polite">z14</span>
+              <button id="zoom-in" class="icon-button" type="button" data-i18n-attr="aria-label:map.zoomIn" aria-label="Увеличить масштаб">+</button>
             </div>
           </div>
-          <div class="map-viewport" id="map-viewport">
-            <div id="map" role="application" aria-label="Интерактивная карта экспедиции"></div>
+          <div class="map-viewport" id="map-viewport" tabindex="-1">
+            <div id="map" role="application" data-i18n-attr="aria-label:map.aria" aria-label="Интерактивная карта экспедиции"></div>
+            <canvas class="overlay-canvas" id="overlay-canvas" aria-hidden="true"></canvas>
             <canvas class="fog-canvas" id="fog-canvas" aria-hidden="true"></canvas>
+            <div class="marker-layer" id="marker-layer"></div>
             <div class="player" id="player" role="img" aria-label="Ваш исследователь">
               <span class="player-aura"></span><span class="player-icon">✦</span>
             </div>
-            <div class="map-hint"><span>✦</span> Перемещайтесь по карте или используйте <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></div>
+            <div class="quest-arrow" id="quest-arrow" hidden aria-hidden="true">➤</div>
+            <div class="loading" id="loading" hidden><span class="spinner" aria-hidden="true"></span><span data-i18n="loading.chunks">Подгружаю карту…</span></div>
+            <pre class="debug" id="debug" hidden></pre>
+            <div class="map-hint"><span aria-hidden="true">✦</span> <span data-i18n="map.hint">Перемещайтесь по карте или используйте</span> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></div>
           </div>
         </div>
 
-        <aside class="side-panel">
+        <aside class="side-panel" id="side-panel" aria-label="Сводка экспедиции">
+          <button class="sheet-handle" id="sheet-handle" type="button" aria-expanded="false" aria-controls="side-panel">
+            <span aria-hidden="true"></span><b id="sheet-summary">0%</b>
+          </button>
           <div class="progress-block">
-            <div class="panel-heading"><span>Открытая территория</span><strong id="progress-value">12%</strong></div>
-            <div class="progress-track"><span id="progress-bar"></span></div>
+            <div class="panel-heading"><span data-i18n="progress.title">Открытая территория</span><strong id="progress-value" aria-live="polite">0%</strong></div>
+            <div class="progress-track" role="progressbar" id="progress-track" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="progress-bar"></span></div>
             <p id="progress-caption">Путь только начинается</p>
+            <p class="muted" id="progress-area"></p>
+          </div>
+          <div class="level-block">
+            <div class="panel-heading"><span id="level-label">Уровень 1</span><strong id="today-value">+0</strong></div>
+            <div class="progress-track thin"><span id="xp-bar"></span></div>
+            <p class="muted" id="xp-caption"></p>
+          </div>
+          <div class="quest-block">
+            <span class="panel-label" data-i18n="quest.title">Цель</span>
+            <p id="quest-text">—</p>
+            <p class="muted" id="nearest-text"></p>
+            <div id="challenge-text" class="muted"></div>
           </div>
           <div class="coordinates">
-            <span class="panel-label">Текущая позиция</span>
-            <strong id="coordinates">48° 21′ N &nbsp; 16° 22′ E</strong>
+            <span class="panel-label" data-i18n="position.title">Текущая позиция</span>
+            <strong id="coordinates">—</strong>
           </div>
           <div class="discoveries">
-            <div class="panel-heading"><span>Найдено объектов</span><strong id="discovery-count">1 / 3</strong></div>
-            <div class="discovery-list" id="discovery-list">
-              <div class="discovery found" data-poi="camp"><span class="discovery-icon">⌂</span><span><b>Базовый лагерь</b><small>Отправная точка</small></span><i>✓</i></div>
-              <div class="discovery" data-poi="tower"><span class="discovery-icon">?</span><span><b>Старая башня</b><small>Расстояние: 184 м</small></span><i>·</i></div>
-              <div class="discovery" data-poi="crossing"><span class="discovery-icon">?</span><span><b>Тихая переправа</b><small>Расстояние: 267 м</small></span><i>·</i></div>
-            </div>
+            <div class="panel-heading"><span data-i18n="pois.title">Найдено объектов</span><strong id="discovery-count">0 / 0</strong></div>
+            <ul class="discovery-list" id="discovery-list"></ul>
           </div>
-          <button id="locate" class="locate-button" type="button"><span>⌖</span> Вернуться к лагерю</button>
+          <div class="minimap" id="minimap" aria-hidden="true"></div>
+          <button id="locate" class="locate-button" type="button"><span aria-hidden="true">⌂</span> <span data-i18n="locate">Вернуться к лагерю</span></button>
         </aside>
       </section>
       <footer>
         <span>Сохраняйте любопытство.</span>
-        <span class="footer-tools">
-          <button id="export-fog" class="tool-button" type="button">Экспорт</button>
-          <button id="export-h3" class="tool-button" type="button">Экспорт H3</button>
-          <label class="tool-button" for="import-fog">Импорт<input id="import-fog" type="file" accept="application/json,application/gzip,.json,.gz" /></label>
-          <button id="reset-fog" class="tool-button danger" type="button">Стереть</button>
-        </span>
-        <span id="saved-at">Последнее сохранение: загрузка…</span>
+        <span id="saved-at">…</span>
       </footer>
     </main>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-    <script src="fog-store.js"></script>
-    <script src="script.js"></script>
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH"
+      crossorigin="anonymous"
+    ></script>
+    <script type="module" src="src/main.js"></script>
   </body>
 </html>

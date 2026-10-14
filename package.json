@@ -1,0 +1,27 @@
+{
+  "name": "terra-incognita",
+  "version": "0.3.0",
+  "private": true,
+  "description": "Карта путешественника с туманом войны: открытые области сохраняются навсегда",
+  "type": "module",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "test": "node --test tests/unit/*.test.js",
+    "test:e2e": "node tests/e2e/run.mjs",
+    "lint": "eslint .",
+    "format": "prettier --write src tests bench",
+    "format:check": "prettier --check src tests bench",
+    "typecheck": "tsc -p jsconfig.json",
+    "bench": "node bench/store-bench.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.12.0",
+    "eslint": "9.12.0",
+    "fake-indexeddb": "6.0.0",
+    "globals": "15.11.0",
+    "h3-js": "4.1.0",
+    "playwright-core": "1.47.2",
+    "prettier": "3.3.3",
+    "typescript": "5.6.3"
+  }
+}
