@@ -23,6 +23,9 @@ const FOG_COLORS = {
 };
 const CACHE_LIMIT = 600;
 const LEVELS = [32, 64, 128, 256];
+const MOSAIC_SPAN = 16; // чанков по стороне мозаики (= тайл z10)
+const MOSAIC_LEVEL = 32; // пикселей на чанк внутри мозаики
+const MOSAIC_MAX_PX = 160; // до этого размера чанка levelFor и так выбирает уровень 32
 
 /**
  * @typedef {import('../fog-store.js').FogStore} FogStore
@@ -68,6 +71,10 @@ export class FogRenderer {
     this.choropleth = [];
     /** @type {Map<string, CacheEntry>} */
     this.cache = new Map();
+    /** @type {Map<string, {canvas: HTMLCanvasElement, sig: number}>} */
+    this.mosaics = new Map();
+    /** @type {any} */
+    this.mosaicSource = null;
     /** @type {Map<string, CacheEntry>} */
     this.heatCache = new Map();
     /** @type {Map<string, CacheEntry>} */
@@ -93,6 +100,7 @@ export class FogRenderer {
     this.fog.on('evict', (/** @type {Chunk} */ chunk) => this.forget(chunk.key));
     this.fog.on('cleared', () => {
       this.cache.clear();
+      this.mosaics.clear();
       this.heatCache.clear();
       this.requestDraw();
     });
@@ -210,6 +218,61 @@ export class FogRenderer {
     return entry.bitmap;
   }
 
+  /**
+   * Рисует видимые чанки через мозаики MOSAIC_SPAN×MOSAIC_SPAN. Мозаика
+   * пересобирается, только когда меняется версия одного из её чанков.
+   * @param {Chunk[]} chunks @param {CanvasRenderingContext2D} m
+   */
+  drawMosaics(chunks, m) {
+    if (this.mosaicSource !== this.source) {
+      this.mosaics.clear();
+      this.mosaicSource = this.source;
+    }
+    /** @type {Map<string, {sx: number, sy: number, list: Chunk[]}>} */
+    const groups = new Map();
+    chunks.forEach((chunk) => {
+      const sx = Math.floor(chunk.cx / MOSAIC_SPAN);
+      const sy = Math.floor(chunk.cy / MOSAIC_SPAN);
+      const key = `${sx}:${sy}`;
+      let g = groups.get(key);
+      if (!g) groups.set(key, (g = { sx, sy, list: [] }));
+      g.list.push(chunk);
+    });
+    const side = MOSAIC_SPAN * MOSAIC_LEVEL;
+    groups.forEach((g, key) => {
+      let sig = 0;
+      g.list.forEach((c) => {
+        sig = (sig * 31 + c.version * 7 + c.cx * 3 + c.cy) | 0;
+      });
+      sig = (sig * 31 + g.list.length) | 0;
+      let entry = this.mosaics.get(key);
+      if (!entry || entry.sig !== sig) {
+        const canvas = entry ? entry.canvas : document.createElement('canvas');
+        canvas.width = side;
+        canvas.height = side;
+        const c = /** @type {CanvasRenderingContext2D} */ (canvas.getContext('2d'));
+        c.clearRect(0, 0, side, side);
+        let complete = true;
+        g.list.forEach((chunk) => {
+          const img = this.maskImage(chunk, MOSAIC_LEVEL, this.cache);
+          const e = this.cache.get(`${chunk.key}@${MOSAIC_LEVEL}`);
+          if (!img || (e && e.pending)) complete = false;
+          if (img) c.drawImage(img, (chunk.cx - g.sx * MOSAIC_SPAN) * MOSAIC_LEVEL, (chunk.cy - g.sy * MOSAIC_SPAN) * MOSAIC_LEVEL);
+        });
+        // неполную мозаику пересоберём, когда воркер вернёт картинки
+        entry = { canvas, sig: complete ? sig : NaN };
+        this.mosaics.set(key, entry);
+      }
+      const nw = this.view.project(...latLngOf(g.sx * MOSAIC_SPAN, g.sy * MOSAIC_SPAN));
+      const se = this.view.project(...latLngOf((g.sx + 1) * MOSAIC_SPAN, (g.sy + 1) * MOSAIC_SPAN));
+      m.drawImage(entry.canvas, nw.x, nw.y, se.x - nw.x, se.y - nw.y);
+    });
+    if (this.mosaics.size > 64) {
+      const visible = new Set(groups.keys());
+      [...this.mosaics.keys()].forEach((k) => !visible.has(k) && this.mosaics.delete(k));
+    }
+  }
+
   /** @param {Chunk} chunk */
   heatImage(chunk) {
     let entry = this.heatCache.get(chunk.key);
@@ -264,9 +327,23 @@ export class FogRenderer {
       this.drawHexMask(W, H, settings.hexMeters);
     } else {
       mctx.imageSmoothingEnabled = !crisp;
-      mctx.imageSmoothingQuality = 'high';
       const base = mode === 'heroes4' ? 0.45 : mode === 'moba' ? 0.3 : 1;
-      chunks.forEach((chunk) => {
+      const first = chunks[0];
+      const firstPx = first
+        ? this.view.project(this.fog.chunkBounds(first).south, this.fog.chunkBounds(first).east).x -
+          this.view.project(this.fog.chunkBounds(first).north, this.fog.chunkBounds(first).west).x
+        : 0;
+      // На мелких масштабах чанки склеиваются в кэшируемые мозаики 16×16:
+      // вместо сотни drawImage за кадр — несколько.
+      const useMosaic = !crisp && mode !== 'redalert' && firstPx > 0 && firstPx < MOSAIC_MAX_PX;
+      // бикубика ('high') на сотнях уменьшенных масок дороже кадра; билинейной хватает
+      mctx.imageSmoothingQuality = 'low';
+      if (useMosaic) {
+        chunkPx = firstPx;
+        mctx.globalAlpha = base;
+        this.drawMosaics(chunks, mctx);
+      }
+      (useMosaic ? [] : chunks).forEach((chunk) => {
         const b = this.fog.chunkBounds(chunk);
         const nw = this.view.project(b.north, b.west);
         const se = this.view.project(b.south, b.east);
@@ -606,6 +683,15 @@ export class FogRenderer {
     c.fillText('© OpenStreetMap contributors', rect.width - 10, rect.height - 9);
     return out;
   }
+}
+
+/**
+ * Северо-западный угол чанка (cx, cy) зума CHUNK_ZOOM как [lat, lng].
+ * @param {number} cx @param {number} cy @returns {[number, number]}
+ */
+function latLngOf(cx, cy) {
+  const n = Math.PI - (2 * Math.PI * cy) / 2 ** 14;
+  return [(180 / Math.PI) * Math.atan(Math.sinh(n)), (cx / 2 ** 14) * 360 - 180];
 }
 
 /** @param {Uint8ClampedArray} pixels @param {number} size */
