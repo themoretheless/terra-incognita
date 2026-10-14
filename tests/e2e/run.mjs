@@ -93,6 +93,26 @@ const jumped = await page.evaluate(() => window.terra.player);
 check('фильтр отбрасывает скачок', Math.abs(jumped.lng - 2.2945) > 0.01, JSON.stringify(jumped));
 await page.screenshot({ path: `${OUT}/gps.png` });
 
+// Время кадра пелены: ~200 видимых чанков, медиана < 4 мс.
+const perf = await page.evaluate(async () => {
+  const t = window.terra;
+  t.settings.set('input', 'manual');
+  for (let i = 0; i < 17; i += 1) for (let j = 0; j < 15; j += 1) t.fog.reveal(48.76 + i * 0.012, 2.15 + j * 0.02, 40);
+  t.view.setView(48.85, 2.29, 10.6);
+  await new Promise((r) => setTimeout(r, 1500));
+  const R = t.renderer;
+  for (let k = 0; k < 10; k += 1) R.draw();
+  const ms = [];
+  for (let k = 0; k < 30; k += 1) {
+    R.draw();
+    ms.push(R.stats.frameMs);
+    await new Promise((r) => requestAnimationFrame(r));
+  }
+  ms.sort((a, b) => a - b);
+  return { chunks: R.stats.chunks, median: ms[15] };
+});
+check('кадр пелены < 4 мс при ~200 чанках', perf.chunks >= 180 && perf.median < 4, `${perf.chunks} чанков, медиана ${perf.median.toFixed(1)} мс`);
+
 const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
 await mobile.addInitScript(() => localStorage.setItem('terra-settings', JSON.stringify({ onboarded: true })));
 await mobile.goto(BASE);
