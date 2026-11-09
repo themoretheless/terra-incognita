@@ -1,0 +1,13 @@
+// Горячие клавиши. Каждая строка — один корневой узел: так список <For> переставляет её целиком.
+component Help {
+  Column {
+    part: 'hotkeys';
+    for k in keys key k.combo {
+      Row {
+        part: 'hotkey';
+        Text { part: 'kbd'; text: k.combo; }
+        Text { text: k.label; }
+      }
+    }
+  }
+}

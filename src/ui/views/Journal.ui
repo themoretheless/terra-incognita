@@ -1,0 +1,24 @@
+// Журнал экспедиции по дням.
+component Journal {
+  i18n ru { empty: 'Записей пока нет — отправляйтесь в путь.'; }
+  i18n en { empty: 'No entries yet — go explore.'; }
+
+  Column {
+    part: 'journal';
+    for row in rows key row.day {
+      Column {
+        part: 'journal-row';
+        Row {
+          gap: 10;
+          Text { part: 'mono'; text: row.day; }
+          Text { text: row.summary; }
+        }
+        if row.places != '' {
+          Text { part: 'muted'; text: row.places; }
+        }
+      }
+    } empty {
+      Text { part: 'muted'; text: i18n.empty; }
+    }
+  }
+}

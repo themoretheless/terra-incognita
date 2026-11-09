@@ -5,14 +5,20 @@
   "description": "Карта путешественника с туманом войны: открытые области сохраняются навсегда",
   "type": "module",
   "scripts": {
-    "start": "python3 -m http.server 8080",
+    "start": "vite",
     "test": "node --test tests/unit/*.test.js",
     "test:e2e": "node tests/e2e/run.mjs",
     "lint": "eslint .",
     "format": "prettier --write src tests bench",
     "format:check": "prettier --check src tests bench",
-    "typecheck": "tsc -p jsconfig.json",
-    "bench": "node bench/store-bench.mjs"
+    "typecheck": "tsc -p tsconfig.json",
+    "bench": "node bench/store-bench.mjs",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 8765 --strictPort",
+    "svet:update": "git submodule update --remote vendor/forma && npm install",
+    "svet:build": "npm --prefix vendor/forma/packages/svet ci --no-audit --no-fund && npm --prefix vendor/forma/packages/svet run build:package",
+    "postinstall": "npm run svet:build"
   },
   "devDependencies": {
     "@eslint/js": "9.12.0",
@@ -22,6 +28,9 @@
     "h3-js": "4.1.0",
     "playwright-core": "1.47.2",
     "prettier": "3.3.3",
-    "typescript": "5.6.3"
+    "svet-engine": "file:vendor/forma/packages/svet",
+    "typescript": "5.6.3",
+    "typescript-eslint": "^8.72.2",
+    "vite": "^8.3.7"
   }
 }

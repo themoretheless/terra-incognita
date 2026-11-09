@@ -1,0 +1,54 @@
+// Статистика: плитки, достижения, район. Данные собирает panels.tsx.
+component Stats {
+  i18n ru {
+    achievements: 'Достижения';
+    district: 'Район';
+    streets: 'Посчитать улицы';
+    choropleth: 'Хороплет районов';
+    challenge: 'Испытание: 5% за неделю';
+  }
+  i18n en {
+    achievements: 'Achievements';
+    district: 'District';
+    streets: 'Count streets';
+    choropleth: 'District choropleth';
+    challenge: 'Challenge: 5% in a week';
+  }
+
+  Column {
+    part: 'stats';
+    Grid {
+      part: 'stat-grid';
+      for s in tiles key s.label {
+        Column {
+          part: 'stat';
+          Text { part: 'stat-label'; text: s.label; }
+          Text { part: 'stat-value'; text: s.value; }
+        }
+      }
+    }
+    Text { part: 'section'; text: i18n.achievements; }
+    Grid {
+      part: 'achievements';
+      for a in achievements key a.id {
+        Row {
+          part: 'achievement';
+          unlocked: a.unlocked;
+          Text { part: 'achievement-icon'; text: a.icon; }
+          Text { text: a.name; }
+        }
+      }
+    }
+    Text { part: 'section'; text: i18n.district; }
+    Text { part: 'muted'; key: 'coverage'; text: coverage; }
+    Row {
+      part: 'actions';
+      Button { part: 'chip'; busy: busy; disabled: busy; text: i18n.streets; clicked -> events.streets(); }
+      Button { part: 'chip'; disabled: busy; text: i18n.choropleth; clicked -> events.choropleth(); }
+      Button { part: 'chip'; disabled: busy; text: i18n.challenge; clicked -> events.challenge(); }
+    }
+    if streets != '' {
+      Text { part: 'muted'; key: 'streets'; text: streets; }
+    }
+  }
+}

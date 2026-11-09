@@ -1,0 +1,13 @@
+// Переключатель стиля пелены. `pressed` попадает в data-pressed и красит активную кнопку.
+component ThemeSwitcher {
+  i18n ru { label: 'Стиль экспедиции'; }
+  i18n en { label: 'Expedition style'; }
+
+  Row {
+    part: 'themes';
+    Text { part: 'themes-label'; text: i18n.label; }
+    Button { part: 'theme-button'; choice: 'terra'; pressed: theme == 'terra'; text: 'Terra Incognita'; clicked -> events.pick('terra'); }
+    Button { part: 'theme-button'; choice: 'heroes'; pressed: theme == 'heroes'; text: 'Heroes III'; clicked -> events.pick('heroes'); }
+    Button { part: 'theme-button'; choice: 'western'; pressed: theme == 'western'; text: 'Red Dead'; clicked -> events.pick('western'); }
+  }
+}

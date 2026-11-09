@@ -1,0 +1,108 @@
+// Сводка экспедиции. Значения приходят сигналами через viewModel (src/ui/model.ts).
+component SidePanel {
+  i18n ru {
+    progress: 'Открытая территория';
+    quest: 'Цель';
+    position: 'Текущая позиция';
+    pois: 'Найдено объектов';
+    locate: 'Вернуться к лагерю';
+  }
+  i18n en {
+    progress: 'Explored territory';
+    quest: 'Goal';
+    position: 'Current position';
+    pois: 'Places found';
+    locate: 'Back to camp';
+  }
+
+  Column {
+    part: 'summary';
+
+    Column {
+      part: 'block';
+      key: 'progress';
+      Row {
+        part: 'heading';
+        Text { text: i18n.progress; }
+        Text { part: 'value'; key: 'progressValue'; text: '${progressShown}%'; }
+      }
+      Frame {
+        part: 'track';
+        Frame { part: 'bar'; key: 'progressBar'; width: progressWidth; }
+      }
+      Text { part: 'caption'; text: progressCaption; }
+      Text { part: 'muted'; text: progressArea; }
+    }
+
+    Column {
+      part: 'block';
+      key: 'level';
+      Row {
+        part: 'heading';
+        Text { text: levelLabel; }
+        Text { part: 'value'; text: todayText; }
+      }
+      Frame {
+        part: 'track';
+        thin: true;
+        Frame { part: 'bar'; width: xpWidth; }
+      }
+      Text { part: 'muted'; text: xpCaption; }
+    }
+
+    Column {
+      part: 'block';
+      key: 'quest';
+      Text { part: 'label'; text: i18n.quest; }
+      Text { part: 'body'; key: 'questText'; text: questText; }
+      if nearestText != '' {
+        Text { part: 'muted'; text: nearestText; }
+      }
+      if challengeText != '' {
+        Text { part: 'muted'; text: challengeText; }
+      }
+    }
+
+    Column {
+      part: 'block';
+      key: 'position';
+      Text { part: 'label'; text: i18n.position; }
+      Text { part: 'mono'; key: 'coordinates'; text: coordinates; }
+    }
+
+    Column {
+      part: 'block';
+      key: 'discoveries';
+      Row {
+        part: 'heading';
+        Text { text: i18n.pois; }
+        Text { part: 'value'; key: 'discoveryCount'; text: discoveryCount; }
+      }
+      Column {
+        part: 'list';
+        for poi in pois key poi.key {
+          Row {
+            part: 'poi';
+            found: poi.found;
+            fresh: poi.fresh;
+            Text { part: 'poi-icon'; text: poi.icon; }
+            Column {
+              part: 'poi-body';
+              Text { part: 'poi-name'; text: poi.name; }
+              Text { part: 'poi-note'; text: poi.note; }
+            }
+          }
+        }
+      }
+    }
+
+    slot minimap { }
+
+    Button {
+      part: 'locate';
+      key: 'locate';
+      text: '⌂  ${i18n.locate}';
+      clicked -> events.locate();
+    }
+  }
+}

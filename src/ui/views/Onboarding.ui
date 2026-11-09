@@ -1,0 +1,44 @@
+// Знакомство при первом запуске: три шага, состояние шага живёт в самом компоненте.
+component Onboarding {
+  i18n ru {
+    t0: 'Мир под пеленой';
+    b0: 'Карта скрыта туманом. Он рассеивается там, где вы побывали, — и это сохраняется навсегда, прямо в браузере.';
+    t1: 'Как двигаться';
+    b1: 'Включите GPS и гуляйте, или ходите клавишами WASD и кликами по карте. Старые GPX-треки импортируются во вкладке «Данные».';
+    t2: 'Цели';
+    b2: 'Находите места из OpenStreetMap, открывайте районы, копите опыт и достижения. Клавиша ? покажет все горячие клавиши.';
+    next: 'Дальше';
+    go: 'В путь';
+  }
+  i18n en {
+    t0: 'A world under fog';
+    b0: 'The map is hidden by fog. It lifts wherever you have been — and stays lifted, stored in your browser.';
+    t1: 'How to move';
+    b1: 'Turn on GPS and walk, or use WASD and map clicks. Old GPX tracks can be imported from the Data panel.';
+    t2: 'Goals';
+    b2: 'Find OpenStreetMap places, uncover districts, earn XP and achievements. Press ? for all shortcuts.';
+    next: 'Next';
+    go: 'Let us go';
+  }
+
+  state step: Int = 0;
+
+  let title = step == 0 ? i18n.t0 : (step == 1 ? i18n.t1 : i18n.t2);
+  let body = step == 0 ? i18n.b0 : (step == 1 ? i18n.b1 : i18n.b2);
+
+  Column {
+    part: 'onboarding';
+    gap: 12;
+    Text { part: 'section'; key: 'onboardingTitle'; text: title; }
+    Text { part: 'body'; text: body; }
+    Row {
+      part: 'actions';
+      Text { part: 'muted'; text: '${step + 1} / 3'; }
+      if step < 2 {
+        Button { part: 'chip'; primary: true; key: 'onboardingNext'; text: i18n.next; clicked -> state.increment('step', 1); }
+      } else {
+        Button { part: 'chip'; primary: true; key: 'onboardingDone'; text: i18n.go; clicked -> events.done(); }
+      }
+    }
+  }
+}

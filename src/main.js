@@ -10,15 +10,18 @@ import { GpsTracker, radiusForSpeed } from './gps.js';
 import { Settings } from './settings.js';
 import { Game, levelFor, nextQuest, nearestUnexplored, areaCoverage } from './game.js';
 import { fetchPois, fetchAreasAt } from './osm.js';
-import { distance, dayKey, sunTimes, metersToLatitude, metersToLongitude } from './geo.js';
+import { distance, sunTimes, metersToLatitude, metersToLongitude, pointInMultiPolygon } from './geo.js';
 import { LeafletView } from './map/leaflet-view.js';
 import { MapLibreView } from './map/maplibre-view.js';
 import { FogRenderer } from './render/fog-renderer.js';
 import { Minimap } from './ui/minimap.js';
-import { toast } from './ui/toast.js';
-import { setLang, applyI18n, t, formatDistance, formatArea, compassDirection, getLang } from './i18n.js';
+import { mount } from 'svet-engine/slim';
+import { toast } from './ui/toast.ts';
+import { ui } from './ui/model.ts';
+import { App } from './ui/App.tsx';
+import { setLang, t, formatDistance, formatArea, compassDirection, getLang } from './i18n.js';
 import { $ } from './util/load.js';
-import { setupPanels, openPanel, showOnboarding, typewriter } from './ui/panels.js';
+import { setupPanels, openPanel, showOnboarding } from './ui/panels.tsx';
 
 const PLAYER_KEY = 'terra-player';
 const VIEW_KEY = 'terra-view';
@@ -33,8 +36,7 @@ const THEME_FILTERS = {
 const NIGHT_FILTER = ' brightness(.62) contrast(1.08) saturate(.7) hue-rotate(-8deg)';
 
 const settings = new Settings();
-setLang(settings.get('lang'));
-applyI18n();
+applyLanguage(settings.get('lang'));
 
 const fog = new FogStore();
 const game = new Game();
@@ -47,6 +49,7 @@ const app = {
   settings,
   fog,
   game,
+  FogStore,
   /** @type {TrackStore} */ tracks: /** @type {any} */ (null),
   /** @type {NotesStore} */ notes: /** @type {any} */ (null),
   view: /** @type {any} */ (null),
@@ -70,6 +73,13 @@ const app = {
   toggleGps
 };
 /** @type {any} */ (window).terra = app;
+
+/** @param {string} lang */
+function applyLanguage(lang) {
+  setLang(lang);
+  ui.locale.set(getLang());
+  document.title = t('app.title');
+}
 
 function loadPlayer() {
   try {
@@ -111,7 +121,7 @@ function basemapFilter() {
 function applyTheme(theme, fade = true) {
   document.documentElement.dataset.theme = theme;
   document.documentElement.dataset.night = String(isNight());
-  document.querySelectorAll('.theme-button').forEach((b) => b.setAttribute('aria-pressed', String(/** @type {HTMLElement} */ (b).dataset.theme === theme)));
+  ui.theme.set(theme);
   if (app.view) {
     app.view.setFilter(basemapFilter());
     if (app.view.setTheme) app.view.setTheme(theme, isNight());
@@ -155,7 +165,7 @@ function wireView() {
   view.on('move', onViewChange);
   view.on('resize', onViewChange);
   view.on('zoom', () => {
-    $('#zoom-level').textContent = `z${view.getZoom().toFixed(1).replace(/\.0$/, '')}`;
+    updateZoomLabel();
     onViewChange();
   });
   view.on('click', (/** @type {{lat: number, lng: number}} */ e) => {
@@ -175,7 +185,11 @@ function wireView() {
   view.on('tileload', () => {
     tileWarned = tileErrors > 0 ? tileWarned : false;
   });
-  $('#zoom-level').textContent = `z${Math.round(view.getZoom())}`;
+  updateZoomLabel();
+}
+
+function updateZoomLabel() {
+  ui.zoomLabel.set(`z${app.view.getZoom().toFixed(1).replace(/\.0$/, '')}`);
 }
 
 let viewSaveTimer = /** @type {any} */ (null);
@@ -202,8 +216,7 @@ function onViewChange() {
 
 function updatePlayerMarker() {
   const p = app.view.project(app.player.lat, app.player.lng);
-  const el = $('#player');
-  el.style.transform = `translate(${p.x}px, ${p.y}px)`;
+  ui.playerTransform.set(`translate(${p.x}px, ${p.y}px)`);
   app.renderer.player = app.player;
 }
 
@@ -294,6 +307,9 @@ async function movePlayer(lat, lng, options = {}) {
   await revealAt(lat, lng, radius, { from: options.teleport ? null : prev });
   checkPois();
   updateQuest();
+  // места и район догружаются по мере ухода от точки прошлой загрузки
+  loadPois().then(updateQuest);
+  if (app.area && !pointInMultiPolygon(lat, lng, app.area.polygon)) loadArea();
 }
 
 /** @param {number} dx @param {number} dy */
@@ -313,14 +329,18 @@ function setupGps() {
     },
     onError: (message) => toast(message, { kind: 'error' }),
     onStatus: (status) => {
-      const dot = $('#status-dot');
-      dot.dataset.status = status;
-      const text = { searching: t('gps.search'), tracking: t('gps.on'), weak: t('gps.weak'), off: t('status.active') }[status] || status;
-      $('#status-text').textContent = text;
-      $('#gps-toggle').setAttribute('aria-pressed', String(status !== 'off'));
+      gpsStatus = status;
+      updateStatus();
     }
   });
   if (settings.get('input') === 'gps') app.gps.start();
+}
+
+let gpsStatus = 'off';
+function updateStatus() {
+  ui.statusKind.set(gpsStatus);
+  ui.statusText.set({ searching: t('gps.search'), tracking: t('gps.on'), weak: t('gps.weak'), off: t('status.active') }[gpsStatus] || gpsStatus);
+  ui.gpsActive.set(gpsStatus !== 'off');
 }
 
 function toggleGps() {
@@ -381,35 +401,30 @@ function checkPois() {
   if (changed) updateMarkers();
 }
 
+/** @type {Set<string>} */
+let shownFound = new Set();
 /** @param {boolean} [animateNew] */
 function renderPoiList(animateNew = false) {
-  const list = $('#discovery-list');
   const sorted = app.pois
     .map((poi) => ({ poi, d: distance(app.player.lat, app.player.lng, poi.lat, poi.lng) }))
     .sort((a, b) => Number(b.poi.discovered) - Number(a.poi.discovered) || a.d - b.d)
     .slice(0, 8);
-  const previous = new Set([...list.querySelectorAll('li.found')].map((li) => /** @type {HTMLElement} */ (li).dataset.poi));
-  list.innerHTML = '';
-  sorted.forEach(({ poi, d }) => {
-    const li = document.createElement('li');
-    li.className = `discovery${poi.discovered ? ' found' : ''}`;
-    li.dataset.poi = poi.id;
-    const icon = document.createElement('span');
-    icon.className = 'discovery-icon';
-    icon.textContent = poi.discovered ? (poi.kind === 'camp' ? '⌂' : '✓') : '?';
-    const body = document.createElement('span');
-    const name = document.createElement('b');
-    const small = document.createElement('small');
-    const label = poi.discovered ? poi.name : '???';
-    small.textContent = poi.discovered ? t('pois.found') : t('pois.distance', { d: formatDistance(d) });
-    body.append(name, small);
-    li.append(icon, body);
-    list.appendChild(li);
-    if (animateNew && poi.discovered && !previous.has(poi.id)) typewriter(name, label);
-    else name.textContent = label;
-  });
-  const found = app.pois.filter((p) => p.discovered).length;
-  $('#discovery-count').textContent = `${found} / ${app.pois.length}`;
+  ui.pois.set(
+    sorted.map(({ poi, d }) => {
+      const note = poi.discovered ? t('pois.found') : t('pois.distance', { d: formatDistance(d) });
+      return {
+        key: `${poi.id}|${poi.discovered}|${note}`,
+        id: poi.id,
+        icon: poi.discovered ? (poi.kind === 'camp' ? '⌂' : '✓') : '?',
+        name: poi.discovered ? poi.name : '???',
+        note,
+        found: poi.discovered,
+        fresh: animateNew && poi.discovered && !shownFound.has(poi.id)
+      };
+    })
+  );
+  shownFound = new Set(app.pois.filter((p) => p.discovered).map((p) => p.id));
+  ui.discoveryCount.set(`${shownFound.size} / ${app.pois.length}`);
 }
 
 function updateMarkers() {
@@ -446,29 +461,24 @@ function escapeHtml(s) {
 let nearestTimer = 0;
 function updateQuest() {
   const quest = nextQuest(app.pois, app.player.lat, app.player.lng);
-  const arrow = $('#quest-arrow');
   if (quest) {
-    $('#quest-text').textContent =
-      `${quest.poi.discovered ? quest.poi.name : '???'} — ${t('quest.go', { dir: compassDirection(quest.bearing), d: formatDistance(quest.distance) })}`;
-    arrow.hidden = false;
-    arrow.style.setProperty('--bearing', `${quest.bearing - 90}deg`);
-    const p = app.view.project(app.player.lat, app.player.lng);
-    arrow.style.left = `${p.x}px`;
-    arrow.style.top = `${p.y}px`;
+    ui.questText.set(`??? — ${t('quest.go', { dir: compassDirection(quest.bearing), d: formatDistance(quest.distance) })}`);
+    ui.questBearing.set(quest.bearing - 90);
   } else {
-    $('#quest-text').textContent = t('quest.none');
-    arrow.hidden = true;
+    ui.questText.set(t('quest.none'));
   }
+  ui.questVisible.set(Boolean(quest));
   const now = Date.now();
   if (now - nearestTimer > 3000) {
     nearestTimer = now;
     const near = nearestUnexplored(fog, app.player.lat, app.player.lng, settings.get('radius'), 1500);
-    $('#nearest-text').textContent = near ? t('hint.nearest', { dir: compassDirection(near.bearing), d: formatDistance(near.distance) }) : '';
+    ui.nearestText.set(near ? t('hint.nearest', { dir: compassDirection(near.bearing), d: formatDistance(near.distance) }) : '');
   }
   const ch = game.challengeProgress(app.areaCoverage ? app.areaCoverage.revealed : fog.totalCells);
-  $('#challenge-text').textContent = ch
-    ? `Испытание «${ch.areaName}»: +${ch.gained.toFixed(1)}% из ${ch.targetPercent}% · ${ch.done ? 'выполнено ✓' : ch.expired ? 'время вышло' : `до ${new Date(ch.end).toLocaleDateString()}`}`
-    : '';
+  const en = getLang() === 'en';
+  const state =
+    ch && (ch.done ? (en ? 'done ✓' : 'выполнено ✓') : ch.expired ? (en ? 'time is up' : 'время вышло') : `${en ? 'until' : 'до'} ${new Date(ch.end).toLocaleDateString()}`);
+  ui.challengeText.set(ch ? `${en ? 'Challenge' : 'Испытание'} «${ch.areaName}»: +${ch.gained.toFixed(1)}% ${en ? 'of' : 'из'} ${ch.targetPercent}% · ${state}` : '');
 }
 
 // ---------- прогресс ----------
@@ -479,40 +489,42 @@ function updateProgress() {
   if (app.area && app.areaCoverage) {
     percentage = app.areaCoverage.ratio * 100;
     caption = t('progress.of', { area: app.area.name });
-    $('#map-label').textContent = `${t('map.sector')} · ${app.area.name}`;
+    ui.mapLabel.set(`${t('map.sector')} · ${app.area.name}`);
   } else {
     percentage = Math.min(100, (fog.revealedArea(app.player.lat) / 1e6) * 100);
     caption = t('progress.sector');
+    ui.mapLabel.set(`${t('map.sector')} 01`);
   }
-  const shown = percentage < 10 ? percentage.toFixed(1) : String(Math.round(percentage));
-  $('#progress-bar').style.width = `${percentage}%`;
-  $('#progress-value').textContent = `${shown}%`;
-  $('#sheet-summary').textContent = `${shown}%`;
-  const track = $('#progress-track');
-  track.setAttribute('aria-valuenow', shown);
+  ui.progressShown.set(percentage < 10 ? percentage.toFixed(1) : String(Math.round(percentage)));
+  ui.progressWidth.set(`${percentage}%`);
   const phrase = percentage > 70 ? t('progress.late') : percentage > 35 ? t('progress.mid') : t('progress.start');
-  $('#progress-caption').textContent = `${phrase} · ${caption}`;
-  $('#progress-area').textContent = `${formatArea(fog.revealedArea(app.player.lat))} · ${fog.totalCells.toLocaleString()} кл.`;
-  $('#map-name').textContent = t('map.name', { area: app.area ? app.area.name : 'Долина первых следов', radius: settings.get('radius') });
+  ui.progressCaption.set(`${phrase} · ${caption}`);
+  ui.progressArea.set(`${formatArea(fog.revealedArea(app.player.lat))} · ${fog.totalCells.toLocaleString()} ${getLang() === 'en' ? 'cells' : 'кл.'}`);
+  ui.mapName.set(t('map.name', { area: app.area ? app.area.name : getLang() === 'en' ? 'Valley of first steps' : 'Долина первых следов', radius: settings.get('radius') }));
 }
 
 function updateLevel() {
   const { level, current, next } = levelFor(game.state.xp);
-  $('#level-label').textContent = t('level', { level });
-  $('#xp-bar').style.width = `${((game.state.xp - current) / (next - current)) * 100}%`;
-  $('#xp-caption').textContent =
-    `${t('xp', { xp: game.state.xp.toLocaleString(), next: next.toLocaleString() })} · ${t('today.cells', { today: game.today(), week: game.week() })}`;
-  $('#today-value').textContent = `+${game.today()}`;
+  ui.levelLabel.set(t('level', { level }));
+  ui.xpWidth.set(`${((game.state.xp - current) / (next - current)) * 100}%`);
+  ui.xpCaption.set(`${t('xp', { xp: game.state.xp.toLocaleString(), next: next.toLocaleString() })} · ${t('today.cells', { today: game.today(), week: game.week() })}`);
+  ui.todayText.set(`+${game.today()}`);
   const days = Object.keys(game.state.days).length || 1;
-  $('#intro-eyebrow').textContent = t('intro.eyebrow', { day: String(days).padStart(2, '0') });
+  ui.eyebrow.set(t('intro.eyebrow', { day: String(days).padStart(2, '0') }));
 }
 
 function updatePosition() {
   const p = app.player;
-  $('#coordinates').textContent = `${Math.abs(p.lat).toFixed(4)}° ${p.lat >= 0 ? 'N' : 'S'}   ${Math.abs(p.lng).toFixed(4)}° ${p.lng >= 0 ? 'E' : 'W'}`;
+  ui.coordinates.set(`${Math.abs(p.lat).toFixed(4)}° ${p.lat >= 0 ? 'N' : 'S'}   ${Math.abs(p.lng).toFixed(4)}° ${p.lng >= 0 ? 'E' : 'W'}`);
 }
 
+let areaLoading = false;
+let areaTriedAt = 0;
 async function loadArea() {
+  // не чаще раза в минуту: вне известных границ запрос повторялся бы на каждом шаге
+  if (areaLoading || Date.now() - areaTriedAt < 60000) return;
+  areaLoading = true;
+  areaTriedAt = Date.now();
   try {
     const areas = await fetchAreasAt(app.player.lat, app.player.lng);
     const local = areas.find((a) => a.level >= 9) || areas[0] || null;
@@ -525,10 +537,14 @@ async function loadArea() {
     }
   } catch (error) {
     /* без сети прогресс считается по квадратному километру */
+  } finally {
+    areaLoading = false;
   }
 }
 
 function refreshAll() {
+  updateStatus();
+  clock();
   updatePlayerMarker();
   updatePosition();
   updateProgress();
@@ -569,7 +585,7 @@ function setupInput() {
         const modes = ['classic', 'heroes4', 'redalert', 'moba', 'hex'];
         const next = modes[(modes.indexOf(settings.get('fogMode')) + 1) % modes.length];
         settings.set('fogMode', next);
-        toast(`Режим пелены: ${next}`);
+        toast(`${getLang() === 'en' ? 'Fog mode' : 'Режим пелены'}: ${next}`);
       },
       g: () => toggleGps(),
       c: () => centerOnPlayer(),
@@ -588,24 +604,12 @@ function setupInput() {
       action();
     }
   });
-  $('#locate').addEventListener('click', () => {
-    const start = settings.get('start');
-    movePlayer(start.lat, start.lng, { teleport: true });
-    app.view.setView(start.lat, start.lng, 15);
-  });
-  $('#center-me').addEventListener('click', centerOnPlayer);
-  $('#gps-toggle').addEventListener('click', toggleGps);
-  $('#zoom-in').addEventListener('click', () => app.view.zoomIn());
-  $('#zoom-out').addEventListener('click', () => app.view.zoomOut());
-  document
-    .querySelectorAll('.theme-button')
-    .forEach((button) => button.addEventListener('click', () => settings.set('theme', /** @type {string} */ (/** @type {HTMLElement} */ (button).dataset.theme))));
-  const handle = $('#sheet-handle');
-  handle.addEventListener('click', () => {
-    const open = handle.getAttribute('aria-expanded') !== 'true';
-    handle.setAttribute('aria-expanded', String(open));
-    $('#side-panel').classList.toggle('expanded', open);
-  });
+}
+
+function locate() {
+  const start = settings.get('start');
+  movePlayer(start.lat, start.lng, { teleport: true });
+  app.view.setView(start.lat, start.lng, 15);
 }
 
 function setupSettingsReactions() {
@@ -614,12 +618,11 @@ function setupSettingsReactions() {
     if (key === 'ui') document.documentElement.dataset.ui = value;
     if (key === 'night') applyTheme(settings.get('theme'), false);
     if (key === 'lang') {
-      setLang(value);
-      applyI18n();
+      applyLanguage(value);
       refreshAll();
     }
     if (key === 'basemap') recreateView();
-    if (key === 'debug') $('#debug').hidden = !value;
+    if (key === 'debug') ui.debugVisible.set(Boolean(value));
     if (['fogMode', 'showHeat', 'showTrack', 'regrowDays', 'hexMeters', 'visionMeters'].includes(key)) app.renderer.requestDraw();
     if (key === 'radius') updateProgress();
     if (key === 'input') {
@@ -634,18 +637,19 @@ function setupSettingsReactions() {
 function setupDebugAndLoading() {
   setInterval(() => {
     const loading = fog.loading.size > 0 || (app.renderer && app.renderer.stats.pending > 0);
-    $('#loading').hidden = !loading;
+    ui.loading.set(Boolean(loading));
     if (settings.get('debug') && app.renderer) {
       const s = app.renderer.stats;
-      $('#debug').textContent =
+      ui.debugText.set(
         `кадр ${s.frameMs.toFixed(2)} мс (ср. ${s.avgMs.toFixed(2)})\nчанков на экране ${s.chunks}\nв памяти ${fog.chunks.size} / в индексе ${fog.index.size}\n` +
-        `кэш картинок ${s.cache}, ждут ${s.pending}\nкадров ${s.draws}\nGPS отброшено: ${JSON.stringify(app.gps ? app.gps.rejected : {})}`;
+          `кэш картинок ${s.cache}, ждут ${s.pending}\nкадров ${s.draws}\nGPS отброшено: ${JSON.stringify(app.gps ? app.gps.rejected : {})}`
+      );
     }
   }, 400);
 }
 
 function clock() {
-  $('#clock').textContent = new Date().toLocaleTimeString(getLang() === 'en' ? 'en-GB' : 'ru-RU', { hour: '2-digit', minute: '2-digit' });
+  ui.clock.set(new Date().toLocaleTimeString(getLang() === 'en' ? 'en-GB' : 'ru-RU', { hour: '2-digit', minute: '2-digit' }));
 }
 
 function registerServiceWorker() {
@@ -660,7 +664,22 @@ function registerServiceWorker() {
 async function boot() {
   document.documentElement.dataset.ui = settings.get('ui');
   if (new URLSearchParams(location.search).has('debug')) settings.set('debug', true);
-  $('#debug').hidden = !settings.get('debug');
+  ui.debugVisible.set(Boolean(settings.get('debug')));
+  mount(
+    () =>
+      App({
+        actions: {
+          openPanel: (name) => openPanel(app, name),
+          pickTheme: (theme) => settings.set('theme', /** @type {any} */ (theme)),
+          toggleGps,
+          centerOnPlayer,
+          zoomIn: () => app.view.zoomIn(),
+          zoomOut: () => app.view.zoomOut(),
+          locate
+        }
+      }),
+    $('#app')
+  );
   await fog.ready;
   if (fog.error) toast(fog.error.message, { kind: 'error', duration: 12000 });
   fog.on('error', (/** @type {Error} */ error) => toast(error.message, { kind: 'error', duration: 12000 }));
@@ -702,7 +721,7 @@ async function boot() {
     app.renderer.requestDraw();
   });
   fog.on('saved', () => {
-    $('#saved-at').textContent = t('saved', { time: new Date().toLocaleTimeString() });
+    ui.savedAt.set(t('saved', { time: new Date().toLocaleTimeString() }));
   });
   game.onAchievement.push((a) => toast(t('achievement', { name: `${a.icon} ${getLang() === 'en' ? a.nameEn : a.name}` }), { kind: 'achievement', duration: 7000 }));
   window.addEventListener('resize', () => {
@@ -717,7 +736,7 @@ async function boot() {
   setupGps();
   setupDebugAndLoading();
   applyTheme(settings.get('theme'), false);
-  $('#saved-at').textContent = fog.totalCells ? t('saved.loaded', { n: fog.index.size }) : t('saved.never');
+  ui.savedAt.set(fog.totalCells ? t('saved.loaded', { n: fog.index.size }) : t('saved.never'));
   clock();
   setInterval(clock, 30000);
   setInterval(() => applyTheme(settings.get('theme'), false), 10 * 60000);
@@ -730,7 +749,6 @@ async function boot() {
   registerServiceWorker();
   if (!settings.get('onboarded')) showOnboarding(app);
   document.documentElement.dataset.ready = 'true';
-  void dayKey;
 }
 
 boot().catch((error) => {
