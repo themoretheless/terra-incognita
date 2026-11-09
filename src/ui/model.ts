@@ -2,7 +2,7 @@
  * Модель представления: сигналы Svet, которые пишет оркестратор (main.js)
  * и читают компоненты — и JSX, и Forma `.ui` (через viewModel).
  */
-import { signal, type Signal } from 'svet-engine';
+import { signal, type Signal } from 'svet-engine/slim';
 import { t } from '../i18n.js';
 
 export interface PoiRow {

@@ -3,7 +3,7 @@
  * Forma-компоненты из ./views; формы с выбором, ползунками и файлами — Svet JSX,
  * потому что в Forma поверх Svet пока нет таких контролов.
  */
-import { effect, signal, type Signal } from 'svet-engine';
+import { effect, signal, type Signal } from 'svet-engine/slim';
 import { openDialog, confirmTyped } from './dialog.tsx';
 import { toast } from './toast.ts';
 import { formaView } from './forma.ts';

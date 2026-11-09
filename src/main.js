@@ -15,7 +15,7 @@ import { LeafletView } from './map/leaflet-view.js';
 import { MapLibreView } from './map/maplibre-view.js';
 import { FogRenderer } from './render/fog-renderer.js';
 import { Minimap } from './ui/minimap.js';
-import { mount } from 'svet-engine';
+import { mount } from 'svet-engine/slim';
 import { toast } from './ui/toast.ts';
 import { ui } from './ui/model.ts';
 import { App } from './ui/App.tsx';

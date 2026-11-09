@@ -1,5 +1,5 @@
 /** Общая обвязка для Forma-компонентов: язык из модели, события, освобождение. */
-import { effect, onCleanup, type FormaRuntimeInstance, type FormaSlotMap, type Signal } from 'svet-engine';
+import { effect, onCleanup, type FormaRuntimeInstance, type FormaSlotMap, type Signal } from 'svet-engine/slim';
 import { ui } from './model.ts';
 
 type Factory = (options?: { viewModel?: Record<string, Signal<any>>; locale?: string; slots?: FormaSlotMap }) => FormaRuntimeInstance;

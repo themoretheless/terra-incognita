@@ -7,7 +7,8 @@
 подгружаются по требованию.
 
 ```
-index.html ── src/main.js (оркестратор, window.terra)
+index.html ── src/boot.js (грузит WASM-ядро Svet, затем приложение)
+           └─ src/main.js (оркестратор, window.terra)
                ├─ fog-store.js        хранилище открытого (источник правды)
                │   ├─ db.js           IndexedDB: схема, миграции, ошибки
                │   └─ codec.js        RLE, base64, fnv1a, popcount
@@ -29,6 +30,14 @@ index.html ── src/main.js (оркестратор, window.terra)
                    └─ views/*.ui      Forma: меню, стили, сводка, статистика,
                                       журнал, справка, знакомство
 ```
+
+## Размер: облегчённая сборка Svet
+
+Приложение импортирует `svet-engine/slim`, а не `svet-engine`: в бандл не попадают base64-копия
+WASM-ядра, GPU-модуль и разборщик `.ui`. Ядро (`svet-core.wasm`, 53 КБ) лежит отдельным файлом;
+`src/boot.js` загружает его через `loadSvetWasm()` и только потом импортирует `main.js`, потому
+что модули интерфейса создают сигналы при импорте. Любой импорт из `svet-engine` без `/slim`
+вернёт встроенную копию ядра — в `vite.config.js` и `tsconfig.json` тоже указан `svet-engine/slim`.
 
 ## Интерфейс: кто что делает
 

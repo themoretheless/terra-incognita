@@ -4,7 +4,7 @@
  * Карта, canvas пелены и слой маркеров остаются узлами, которыми управляют
  * императивные модули (Leaflet, FogRenderer, MarkerLayer).
  */
-import { For, effect } from 'svet-engine';
+import { For, effect } from 'svet-engine/slim';
 import { ui, tr, L } from './model.ts';
 import { formaView } from './forma.ts';
 import { dismissToast } from './toast.ts';

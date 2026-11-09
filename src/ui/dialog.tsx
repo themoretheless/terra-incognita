@@ -2,7 +2,7 @@
  * Модальные окна на <dialog>: фокус уходит внутрь и возвращается обратно, Esc закрывает.
  * Содержимое строится в собственной области владения Svet и освобождается при закрытии.
  */
-import { createRoot, signal } from 'svet-engine';
+import { createRoot, signal } from 'svet-engine/slim';
 import { tr } from './model.ts';
 
 export interface DialogAction {
