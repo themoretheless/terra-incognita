@@ -1,0 +1,30 @@
+// Главное меню: каждая кнопка открывает панель. `panel` попадает в data-panel.
+component TopMenu {
+  i18n ru {
+    stats: 'Статистика';
+    journal: 'Журнал';
+    timeline: 'Хроника';
+    data: 'Данные';
+    share: 'Поделиться';
+    settings: 'Настройки';
+  }
+  i18n en {
+    stats: 'Stats';
+    journal: 'Journal';
+    timeline: 'Timeline';
+    data: 'Data';
+    share: 'Share';
+    settings: 'Settings';
+  }
+
+  Row {
+    part: 'menu';
+    Button { part: 'menu-button'; panel: 'stats'; text: i18n.stats; clicked -> events.open('stats'); }
+    Button { part: 'menu-button'; panel: 'journal'; text: i18n.journal; clicked -> events.open('journal'); }
+    Button { part: 'menu-button'; panel: 'timeline'; text: i18n.timeline; clicked -> events.open('timeline'); }
+    Button { part: 'menu-button'; panel: 'data'; text: i18n.data; clicked -> events.open('data'); }
+    Button { part: 'menu-button'; panel: 'share'; text: i18n.share; clicked -> events.open('share'); }
+    Button { part: 'menu-button'; panel: 'settings'; text: i18n.settings; clicked -> events.open('settings'); }
+    Button { part: 'menu-button'; panel: 'help'; icon: true; text: '?'; clicked -> events.open('help'); }
+  }
+}

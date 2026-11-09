@@ -1,0 +1,5 @@
+[submodule "vendor/forma"]
+	path = vendor/forma
+	url = https://github.com/themoretheless/forma
+	branch = main
+	shallow = true

@@ -1,11 +1,12 @@
-/* Service worker: оболочка приложения — network-first, тайлы OSM — cache-first с лимитом. */
-const SHELL = 'terra-shell-v3';
+/* Service worker: оболочка приложения — network-first (собранные файлы кэшируются по мере загрузки),
+   тайлы OSM — cache-first с лимитом. */
+const SHELL = 'terra-shell-v4';
 const TILES = 'terra-tiles-v1';
 const TILE_LIMIT = 800;
 const TILE_HOST = /(^|\.)tile\.openstreetmap\.org$|^tiles\.openfreemap\.org$/;
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(SHELL).then((c) => c.addAll(['./', './index.html', './styles.css', './src/main.js', './manifest.webmanifest', './icons/icon.svg'])).then(() => self.skipWaiting()));
+  event.waitUntil(caches.open(SHELL).then((c) => c.addAll(['./', './index.html', './manifest.webmanifest', './icons/icon.svg'])).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (event) => {

@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true # vendor/forma (ветка release) — движок Svet и компилятор Forma
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -19,18 +21,23 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run bench
+      - run: npm run build
 
   e2e:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
       - run: npx playwright-core install --with-deps chromium
-      - run: python3 -m http.server 8765 &
+      - run: npm run build
+      - run: npm run preview &
+      - run: npx --yes wait-on@8 http://localhost:8765/index.html --timeout 30000
       - run: npm run test:e2e
         env:
           BASE_URL: http://localhost:8765/index.html

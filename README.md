@@ -6,21 +6,30 @@
 
 ## Запуск
 
-ES-модули требуют HTTP-сервера (`file://` не подойдёт):
+Интерфейс написан на [Svet](https://github.com/themoretheless/forma/tree/main/packages/svet)
+и языке разметки Forma. Движок подключён git-подмодулем `vendor/forma`, поэтому клонировать
+нужно вместе с ним:
 
 ```sh
-npm start            # python3 -m http.server 8080 → http://localhost:8080
+git clone --recurse-submodules https://github.com/themoretheless/terra-incognita
+cd terra-incognita
+npm install          # ставит зависимости и собирает пакет svet-engine из подмодуля
+npm start            # Vite → http://localhost:8080
 ```
+
+Уже склонировали без подмодуля — `git submodule update --init`, затем `npm install`.
 
 Разработка:
 
 ```sh
-npm install
 npm test             # юнит-тесты (node:test + fake-indexeddb)
-npm run lint         # ESLint
-npm run typecheck    # tsc --checkJs по JSDoc-типам
+npm run lint         # ESLint (JS и TS/TSX)
+npm run typecheck    # tsc: JSDoc-типы в .js и TypeScript в src/ui
+npm run build        # сборка в dist/ (заодно проверяет все .ui)
 npm run bench        # бенчмарк хранилища: 10⁵ клеток / 10³ чанков
-npm run test:e2e     # Playwright-сценарии (нужен запущенный сервер, см. CONTRIBUTING.md)
+npm run preview      # собранная версия на http://localhost:8765
+npm run test:e2e     # Playwright-сценарии поверх preview (см. CONTRIBUTING.md)
+npm run svet:update  # подтянуть свежий Svet из подмодуля и пересобрать
 ```
 
 ## Возможности
@@ -42,7 +51,7 @@ npm run test:e2e     # Playwright-сценарии (нужен запущенн�
   LRU, синхронизацией вкладок, persistent storage. Экспорт gzip с контрольной суммой,
   импорт с режимами объединить / заменить / вычесть и отменой, H3, GeoJSON,
   автобэкап в файл, заготовка облачной синхронизации.
-- **Интерфейс:** настройки, оформление Heroes и Red Dead, мобильный нижний лист,
+- **Интерфейс:** Svet (сигналы, JSX) и Forma (`.ui`), настройки, оформление Heroes и Red Dead, мобильный нижний лист,
   онбординг, горячие клавиши (`?`), RU/EN, PWA, светлая системная тема, доступность.
 
 Подробнее: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/DATA-FORMAT.md](docs/DATA-FORMAT.md),

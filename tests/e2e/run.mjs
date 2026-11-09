@@ -1,5 +1,5 @@
 // E2E-сценарии: ходьба, перезагрузка, GPS, темы и режимы, панели, импорт/экспорт.
-// Запуск: сервер на BASE_URL (по умолчанию http://localhost:8765) и `npm run test:e2e`.
+// Запуск: `npm run build && npm run preview` (порт 8765), затем `npm run test:e2e`.
 import { chromium } from 'playwright-core';
 import { mkdirSync } from 'node:fs';
 
@@ -44,7 +44,7 @@ const cells2 = await page.evaluate(() => window.terra.fog.totalCells);
 check('сохранение после перезагрузки', cells2 >= cells1, `${cells1} → ${cells2}`);
 
 for (const theme of ['heroes', 'western', 'terra']) {
-  await page.click(`.theme-button[data-theme="${theme}"]`);
+  await page.click(`[data-part="theme-button"][data-choice="${theme}"]`);
   await page.waitForTimeout(400);
   await page.screenshot({ path: `${OUT}/theme-${theme}.png` });
 }
@@ -72,10 +72,28 @@ for (const panel of ['stats', 'journal', 'data', 'settings', 'help', 'share']) {
 }
 check('панели открываются', errors.length === 0, errors.join(' | '));
 
+// Forma и Svet: язык переключается в обоих слоях, флажок ставится через форму Svet.
+await page.evaluate(() => window.terra.settings.set('lang', 'en'));
+await page.waitForTimeout(200);
+const english = await page.evaluate(() => ({
+  menu: document.querySelector('[data-part="menu-button"]').textContent,
+  intro: document.querySelector('.intro h1').textContent,
+  block: document.querySelector('[data-forma-key="progress"] [data-part="heading"]').textContent
+}));
+check('смена языка в Forma и Svet', english.menu === 'Stats' && /Uncover/.test(english.intro) && /Explored/.test(english.block), JSON.stringify(english));
+await page.evaluate(() => window.terra.settings.set('lang', 'ru'));
+
+await page.locator('#map-viewport').focus();
+await page.keyboard.press('f');
+await page.waitForSelector('dialog[open]');
+await page.fill('dialog[open] input[type="text"]', 'Мост');
+await page.click('dialog[open] .btn.primary');
+await page.waitForSelector('.map-marker.marker-flag');
+check('флажок появляется на карте', (await page.evaluate(() => window.terra.notes.list().length)) === 1);
+
 const exported = await page.evaluate(() => window.terra.fog.exportJSON());
 const restored = await page.evaluate(async (text) => {
-  const { FogStore } = await import('./src/fog-store.js');
-  const s = new FogStore({ factory: null, storage: null, broadcast: false });
+  const s = new window.terra.FogStore({ factory: null, storage: null, broadcast: false });
   await s.importJSON(text, 'union');
   return s.totalCells;
 }, exported);
@@ -112,6 +130,18 @@ const perf = await page.evaluate(async () => {
   return { chunks: R.stats.chunks, median: ms[15] };
 });
 check('кадр пелены < 4 мс при ~200 чанках', perf.chunks >= 180 && perf.median < 4, `${perf.chunks} чанков, медиана ${perf.median.toFixed(1)} мс`);
+
+// Знакомство: Forma-компонент со своим состоянием шага.
+const first = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+await first.goto(BASE);
+await first.waitForSelector('html[data-ready="true"]');
+await first.waitForSelector('dialog[open]');
+await first.click('[data-forma-key="onboardingNext"]');
+await first.click('[data-forma-key="onboardingNext"]');
+await first.click('[data-forma-key="onboardingDone"]');
+await first.waitForSelector('dialog', { state: 'detached' });
+check('знакомство проходит три шага', (await first.evaluate(() => window.terra.settings.get('onboarded'))) === true);
+await first.close();
 
 const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
 await mobile.addInitScript(() => localStorage.setItem('terra-settings', JSON.stringify({ onboarded: true })));
